@@ -1,10 +1,13 @@
 package com.example.myapplication
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.example.myapplication.data.EventSink
+import com.example.myapplication.data.PreferencesHelper
 import com.example.myapplication.data.UiEvent
 import com.example.myapplication.data.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.metamask.androidsdk.EthereumFlow
 import io.metamask.androidsdk.EthereumMethod
 import io.metamask.androidsdk.EthereumRequest
@@ -21,7 +24,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val ethereum: EthereumFlow) : ViewModel() {
+class MainViewModel @Inject constructor(
+    private val ethereum: EthereumFlow,
+    @ApplicationContext private val context: Context // Menambahkan Context sebagai parameter constructor
+) : ViewModel() {
 
     private val viewModelScope = CoroutineScope(Dispatchers.Main)
 
@@ -46,9 +52,10 @@ class MainViewModel @Inject constructor(private val ethereum: EthereumFlow) : Vi
                             _uiState.update { it.copy(isConnecting = false) }
                             showMessage(result.error.message)
                         }
-
                         else -> {
                             _uiState.update { it.copy(isConnecting = true) }
+                            // Simpan status koneksi MetaMask setelah berhasil
+                            PreferencesHelper.saveMetaMaskConnectionStatus(context, true)
                         }
                     }
                 }
@@ -72,7 +79,6 @@ class MainViewModel @Inject constructor(private val ethereum: EthereumFlow) : Vi
                                 it.copy(balance = "${BigInteger(cleanHexString, 16)} ETH")
                             }
                         }
-
                         is Result.Success.ItemMap,
                         is Result.Success.Items -> {
                             _uiState.update { it.copy(balance = "NA") }
