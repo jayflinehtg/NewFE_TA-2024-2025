@@ -26,7 +26,6 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val viewModel: MainViewModel = hiltViewModel()
                 val state by viewModel.uiState.collectAsState()
-                val event by viewModel.uiEvent.collectAsState()
 
                 // Navigasi otomatis saat wallet terhubung
                 LaunchedEffect(state.isConnecting) {
@@ -37,10 +36,15 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                // Handle event pesan
-                LaunchedEffect(event) {
-                    (event as? UiEvent.Message)?.let {
-                        // Tampilkan snackbar atau toast
+                // Gunakan pendekatan LaunchedEffect untuk menangani events
+                LaunchedEffect(Unit) {
+                    viewModel.uiEvent.collect { event ->
+                        when (event) {
+                            is UiEvent.Message -> {
+                                // Implementasi tampilkan toast atau snackbar
+                                // Misalnya: Toast.makeText(this@MainActivity, event.error, Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 }
 
