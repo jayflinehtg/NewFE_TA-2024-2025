@@ -1,47 +1,26 @@
-package com.example.myapplication
+package com.example.myapplication.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.myapplication.data.EventSink
 
 @Composable
-fun WalletConnectScreen(
+fun WalletComponent(
     isConnecting: Boolean,
     balance: String?,
     eventSink: (EventSink) -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFFE6F1E9) // Soft green background
+        color = Color(0xFFE6F1E9)
     ) {
         Column(
             modifier = Modifier
@@ -74,10 +53,8 @@ fun WalletConnectScreen(
                         text = "Hubungkan dompet Anda untuk berkontribusi & menjelajahi dunia tanaman herbal!",
                         fontSize = 14.sp,
                         color = Color.Gray,
-                        textAlign = TextAlign.Center
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
-
-                    Spacer(modifier = Modifier.height(24.dp))
 
                     if (isConnecting && balance != null) {
                         Text(
@@ -116,8 +93,7 @@ fun WalletConnectScreen(
                             Text(
                                 text = "As Guest",
                                 fontSize = 14.sp,
-                                color = Color(0xFF388E3C),
-                                textDecoration = TextDecoration.Underline
+                                color = Color(0xFF388E3C)
                             )
                         }
                     }
