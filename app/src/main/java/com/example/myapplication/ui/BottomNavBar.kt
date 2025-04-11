@@ -61,7 +61,7 @@ fun BottomNavBar(navController: NavHostController) {
             startDestination = "walletComponent",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("home") { Home() }
+            composable("home") { Home(navController) }
             composable("addPlant") { AddPlant() }
             composable("profile") { Profile() }
             composable("walletComponent") {

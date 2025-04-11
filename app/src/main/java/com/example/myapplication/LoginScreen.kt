@@ -15,27 +15,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import io.metamask.androidsdk.Result
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController,
-                   onRegisterSuccess: (String) -> Unit,
-                   onNavigateToLogin: () -> Unit
-) {
-    val context = LocalContext.current
-
-    var fullName by remember { mutableStateOf("") }
+fun LoginScreen(navController: NavController, walletAddress: String?, onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
     var password by remember { mutableStateOf("") }
-    var fullNameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
+    var isWalletConnected by remember { mutableStateOf(walletAddress != null) }
+
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.soft_green)),
+            .background(colorResource(id = R.color.soft_green)), // Soft green background
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
@@ -45,9 +43,9 @@ fun RegisterScreen(navController: NavController,
                 .fillMaxWidth()
                 .padding(top = 40.dp)
         ) {
-            // LOGO
+            // ==== LOGO ====
             Image(
-                painter = painterResource(id = R.drawable.plant), // Ganti dengan resource logo yang sesuai
+                painter = painterResource(id = R.drawable.plant), // Replace with R.drawable.plant
                 contentDescription = "Logo Tanaman",
                 modifier = Modifier
                     .size(130.dp)
@@ -55,21 +53,19 @@ fun RegisterScreen(navController: NavController,
             )
 
             Text(
-                text = "REGISTER",
+                text = "LOGIN",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorResource(id = R.color.dark_green),
             )
 
             Text(
-                text = "Daftar Akun Anda!",
+                text = "Silakan Bergabung!",
                 fontSize = 14.sp,
                 color = colorResource(id = R.color.black)
             )
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Form Card
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.green)),
@@ -81,39 +77,7 @@ fun RegisterScreen(navController: NavController,
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Input Nama Lengkap
-                    OutlinedTextField(
-                        value = fullName,
-                        onValueChange = {
-                            fullName = it
-                            fullNameError = null
-                        },
-                        label = { Text("Nama Lengkap") },
-                        placeholder = { Text("Masukkan Nama Lengkap") },
-                        textStyle = TextStyle(fontSize = 16.sp),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        isError = fullNameError != null,
-                        colors = TextFieldDefaults.colors(
-                            unfocusedContainerColor = Color.White,
-                            focusedContainerColor = Color.White,
-                            disabledContainerColor = Color.White,
-                            errorContainerColor = Color.White
-                        )
-                    )
-                    if (fullNameError != null) {
-                        Text(
-                            fullNameError!!,
-                            color = Color.Red,
-                            fontSize = 12.sp,
-                            modifier = Modifier.align(Alignment.Start)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Input Kata Sandi
+                    // Password Input
                     OutlinedTextField(
                         value = password,
                         onValueChange = {
@@ -124,11 +88,11 @@ fun RegisterScreen(navController: NavController,
                         placeholder = { Text("Masukkan Kata Sandi") },
                         visualTransformation = PasswordVisualTransformation(),
                         textStyle = TextStyle(fontSize = 16.sp),
-                        singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
                         shape = RoundedCornerShape(8.dp),
                         isError = passwordError != null,
-                        colors = TextFieldDefaults.colors(
+                        colors = TextFieldDefaults.colors( // Menggunakan TextFieldDefaults.colors
                             unfocusedContainerColor = Color.White,
                             focusedContainerColor = Color.White,
                             disabledContainerColor = Color.White,
@@ -144,30 +108,24 @@ fun RegisterScreen(navController: NavController,
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(30.dp))
 
-                    // Tombol Daftar
+                    // Login Button
                     Button(
-                        onClick = { /* Panggil fungsi register di sini jika diperlukan */ },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
+                        onClick = { /* Handle login */ },
+                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)), // Warna hijau gelap
                         shape = RoundedCornerShape(50),
                         modifier = Modifier.fillMaxWidth(0.8f)
                     ) {
-                        Text("Daftar", fontSize = 14.sp, color = Color.White)
+                        Text("Masuk", fontSize = 14.sp, color = Color.White)
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Link Login
-                    TextButton(onClick = {
-                        navController.navigate("login") {
-                            popUpTo("register") { inclusive = false }
-                        }
-                    }) {
+                    // Link ke Register
+                    TextButton(onClick = onNavigateToRegister) {
                         Text(
-                            "Sudah memiliki akun? Masuk disini!",
+                            "Belum memiliki akun? Daftar disini",
                             fontSize = 12.sp,
-                            color = colorResource(id = R.color.purple),
+                            color = colorResource(id = R.color.purple) // Purple
                         )
                     }
                 }

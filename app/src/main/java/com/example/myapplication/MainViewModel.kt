@@ -79,7 +79,12 @@ class MainViewModel @Inject constructor(
                 }
                 is Result.Error -> {
                     _uiState.update { it.copy(isConnecting = false) }
-                    showMessage("Connection error: ${result.error.message}")
+                    val errorMessage = when (result.error) {
+                        //is io.metamask.androidsdk.exception.EthereumException.ConnectionFailed -> "Gagal terhubung ke MetaMask."
+                        //is io.metamask.androidsdk.exception.EthereumException.UserRejected -> "Permintaan koneksi ditolak oleh pengguna."
+                        else -> "Terjadi kesalahan: ${result.error.message}"
+                    }
+                    showMessage(errorMessage)
                 }
             }
         }
@@ -111,7 +116,7 @@ class MainViewModel @Inject constructor(
                 }
             }
         } else {
-            showMessage("The wallet is not connected!")
+            showMessage("Dompet belum terhubung!")
         }
     }
 
@@ -137,6 +142,15 @@ class MainViewModel @Inject constructor(
         PreferencesHelper.saveMetaMaskConnectionStatus(context, false)
         PreferencesHelper.saveUserRegistrationStatus(context, false)
         showMessage("Masuk sebagai Tamu")
+    }
+
+    fun onRegisterSuccess(walletAddress: String) {
+        try {
+            PreferencesHelper.saveWalletAddress(context, walletAddress)
+            showMessage("Pendaftaran Berhasil!")
+        } catch (e: Exception) {
+            showMessage("Terjadi kesalahan saat pendaftaran: ${e.message}")
+        }
     }
 
     // Inisialisasi koneksi MetaMask jika sebelumnya sudah terkoneksi
