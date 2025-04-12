@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -12,9 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.myapplication.data.UiEvent
 import com.example.myapplication.ui.components.BottomNavBarScreen
 import com.example.myapplication.ui.components.WalletComponent
@@ -27,6 +30,7 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object Login : Screen("login")
     object Home : Screen("home")
+    object Detail : Screen("detail/{plantId}")
 }
 
 @AndroidEntryPoint
@@ -42,6 +46,7 @@ class MainActivity : ComponentActivity() {
                 val snackbarHostState = remember { SnackbarHostState() }
                 val scope = rememberCoroutineScope()
                 val context = LocalContext.current
+                val detailScreen = DetailScreen()
 
                 SnackbarHost(hostState = snackbarHostState)
 
@@ -116,8 +121,19 @@ class MainActivity : ComponentActivity() {
                     composable("home") {
                         BottomNavBarScreen(navController)
                     }
+                composable(
+                    Screen.Detail.route,
+                    arguments = listOf(navArgument("plantId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
+                if (plantId.isNotEmpty()) {
+                    detailScreen.Content(plantId = plantId) { navController.popBackStack() }
+                } else {
+                    Text("Plant ID tidak valid.")
                 }
+            }
             }
         }
     }
+}
 }

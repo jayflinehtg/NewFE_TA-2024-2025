@@ -25,7 +25,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.myapplication.R // Pastikan import R Anda benar
+import com.example.myapplication.R
 
 @Composable
 fun Home(navController: NavController) {
@@ -144,7 +144,10 @@ fun PlantCard(plant: Plant, navController: NavController) {
                 StarRating(rating = plant.rating)
             }
 
-            TextButton(onClick = { /* navController.navigate("detail/${plant.id}") */ }) {
+            TextButton(onClick = {
+                println("Navigasi ke detail dengan plantId: ${plant.id}")
+                navController.navigate("detail/${plant.id}")
+            }) {
                 Text("Detail", color = colorResource(id = R.color.dark_green))
             }
         }

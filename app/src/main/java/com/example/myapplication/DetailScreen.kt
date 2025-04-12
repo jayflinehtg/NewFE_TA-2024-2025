@@ -37,6 +37,10 @@ class DetailScreen {
         val context = LocalContext.current
         val backgroundColor = colorResource(id = com.example.myapplication.R.color.soft_green)
 
+        println("DetailScreen: plantId diterima = $plantId")
+
+        var comment by remember { mutableStateOf("") }
+
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -50,22 +54,12 @@ class DetailScreen {
                         IconButton(onClick = { /* Handle like */ }) {
                             Icon(Icons.Filled.FavoriteBorder, contentDescription = "Like", tint = Color.Red)
                         }
-                        IconButton(onClick = {
-                            val shareIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_TEXT, "Lihat informasi tentang tanaman ini")
-                                type = "text/plain"
-                            }
-                            context.startActivity(Intent.createChooser(shareIntent, "Bagikan melalui"))
-                        }) {
-                            Icon(Icons.Filled.Share, contentDescription = "Share")
-                        }
                     }
                 )
             },
             bottomBar = {
                 CommentInputSection(
-                    comment = "",
+                    comment = comment,
                     onCommentChange = { /* Handle comment change */ },
                     onSendComment = { /* Handle send comment */ }
                 )
@@ -79,83 +73,101 @@ class DetailScreen {
                     .padding(innerPadding)
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(
-                        painter = painterResource(com.example.myapplication.R.drawable.baseline_person_24),
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier
-                            .size(45.dp)
-                            .clip(CircleShape)
+                // Nama Pengguna dan Waktu Postingan
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Nama Pengguna 1",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 4.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column {
-                        Text("Nama Pengguna 1", fontSize = 17.sp, fontWeight = FontWeight.Bold)
-                        Text("Waktu Postingan", fontSize = 12.sp, color = Color.Gray)
-                    }
+                    Text(
+                        text = "Waktu Postingan",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(15.dp))
-                Text("Nama Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text("Nama Tanaman", fontSize = 15.sp)
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(4.dp))
-                Text("Kandungan Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text("Kandungan Tanaman", fontSize = 15.sp)
+                // Detail Tanaman
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Nama Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Nama Tanaman", fontSize = 15.sp)
 
-                Spacer(modifier = Modifier.height(4.dp))
-                Text("Manfaat Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text("Manfaat Tanaman", fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Kandungan Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Kandungan Tanaman", fontSize = 15.sp)
 
-                Spacer(modifier = Modifier.height(4.dp))
-                Text("Cara Pengolahan:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Text("Cara pengolahan tanaman", fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Manfaat Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Manfaat Tanaman", fontSize = 15.sp)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Cara Pengolahan:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Cara pengolahan tanaman", fontSize = 15.sp)
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Gambar Tanaman
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp)
+                        .height(200.dp)
                         .clip(RoundedCornerShape(8.dp))
                 ) {
                     Image(
                         painter = painterResource(com.example.myapplication.R.drawable.jahe),
                         contentDescription = "Plant Image",
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(8.dp)),
+                        modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Average Rating: 0.0", fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Beri Rating:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Row {
-                    for (i in 1..5) {
-                        IconButton(onClick = { /* Handle rating */ }) {
-                            Icon(
-                                painterResource(com.example.myapplication.R.drawable.baseline_star_border_24),
-                                contentDescription = "Star Rating",
-                                tint = Color(0xFFFFD700),
-                                modifier = Modifier.size(34.dp)
-                            )
+                // Rating
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Average Rating: 0.0", fontWeight = FontWeight.Bold)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Beri Rating:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+                    Row {
+                        for (i in 1..5) {
+                            IconButton(onClick = { /* Handle rating */ }) {
+                                Icon(
+                                    painterResource(com.example.myapplication.R.drawable.baseline_star_border_24),
+                                    contentDescription = "Star Rating",
+                                    tint = Color(0xFFFFD700),
+                                    modifier = Modifier.size(34.dp)
+                                )
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Review Pengguna Lainnya:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        Text("Nama Pengguna (Belum Implementasi)", fontWeight = FontWeight.Bold)
-                        Text("Komentar Pengguna", fontSize = 15.sp)
-                        Text("Waktu Komentar", fontSize = 12.sp, color = Color.Gray)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Review Pengguna
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text("Review Pengguna Lainnya:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(8.dp)) {
+                            Text("Nama Pengguna", fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text("Komentar Pengguna", fontSize = 15.sp)
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text("Waktu Komentar", fontSize = 12.sp, color = Color.Gray)
+                        }
                     }
                 }
             }
@@ -181,7 +193,9 @@ class DetailScreen {
             ) {
                 OutlinedTextField(
                     value = comment,
-                    onValueChange = onCommentChange,
+                    onValueChange = { newValue ->
+                        onCommentChange(newValue)
+                    },
                     placeholder = { Text("Tambahkan Komentar Anda...", color = Color.Gray) },
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = colorResource(id = com.example.myapplication.R.color.soft_green),
