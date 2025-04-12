@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.data.EventSink
@@ -53,7 +54,10 @@ fun WalletComponent(
                         text = "Hubungkan dompet Anda untuk berkontribusi & menjelajahi dunia tanaman herbal!",
                         fontSize = 14.sp,
                         color = Color.Gray,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = Modifier
+                            .padding(bottom = 16.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center
                     )
 
                     if (isConnecting && balance != null) {

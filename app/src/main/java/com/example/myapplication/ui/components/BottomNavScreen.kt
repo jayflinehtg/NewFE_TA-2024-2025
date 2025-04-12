@@ -63,11 +63,12 @@ fun BottomNavBarScreen(rootNavController: NavHostController) {
             }
             composable("profile") {
                 Profile(
-//                    onLogout = {
-//                        rootNavController.navigate("walletComponent") {
-//                            popUpTo("home") { inclusive = true }
-//                        }
-//                    }
+                    navController = rootNavController,
+                    onLogout = {
+                        rootNavController.navigate("walletComponent") {
+                            popUpTo("home") { inclusive = true }
+                        }
+                    }
                 )
             }
         }

@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -112,7 +113,8 @@ fun PlantCard(plant: Plant, navController: NavController) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .shadow(4.dp, RoundedCornerShape(12.dp)),
+            .shadow(4.dp, RoundedCornerShape(12.dp))
+            .height(90.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -120,7 +122,8 @@ fun PlantCard(plant: Plant, navController: NavController) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = Icons.Rounded.Park,
@@ -134,7 +137,7 @@ fun PlantCard(plant: Plant, navController: NavController) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = plant.name,
-                    color = Color(0xFF498553),
+                    color = colorResource(id = R.color.dark_green),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -142,7 +145,7 @@ fun PlantCard(plant: Plant, navController: NavController) {
             }
 
             TextButton(onClick = { /* navController.navigate("detail/${plant.id}") */ }) {
-                Text("Detail", color = Color(0xFF498553))
+                Text("Detail", color = colorResource(id = R.color.dark_green))
             }
         }
     }
