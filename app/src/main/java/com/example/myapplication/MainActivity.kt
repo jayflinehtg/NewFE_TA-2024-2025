@@ -16,7 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.data.UiEvent
-import com.example.myapplication.ui.components.BottomNavBar
+import com.example.myapplication.ui.components.BottomNavBarScreen
 import com.example.myapplication.ui.components.WalletComponent
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -45,29 +45,28 @@ class MainActivity : ComponentActivity() {
 
                 SnackbarHost(hostState = snackbarHostState)
 
-                // Navigasi otomatis saat wallet terhubung
-                LaunchedEffect(state.isConnecting) {
-                    if (state.isConnecting) {
+                // Navigasi otomatis ke register jika wallet terhubung & bukan guest
+                LaunchedEffect(state.walletAddress, state.isGuest) {
+                    if (state.walletAddress != null && !state.isGuest) {
                         navController.navigate("register") {
                             popUpTo("walletComponent") { inclusive = true }
                         }
                     }
                 }
 
-                // Handle UI events
+                // Handle UI events dari ViewModel
                 LaunchedEffect(Unit) {
                     viewModel.uiEvent.collect { event ->
                         when (event) {
                             is UiEvent.NavigateTo -> {
-                                navController.navigate(event.route)
+                                navController.navigate(event.route) {
+                                    popUpTo("walletComponent") { inclusive = true }
+                                }
                             }
-                            is UiEvent.Message -> {
-                                // Handle messages (snackbar/toast)
-                            }
+                            else -> {}
                         }
                     }
                 }
-
 
                 NavHost(
                     navController = navController,
@@ -97,7 +96,6 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // Tambahkan screen login
                     composable(Screen.Login.route) {
                         LoginScreen(
                             navController = navController,
@@ -107,15 +105,16 @@ class MainActivity : ComponentActivity() {
                                     popUpTo("login") { inclusive = true }
                                 }
                             },
-                                    onNavigateToRegister = {
+                            onNavigateToRegister = {
                                 navController.navigate("register") {
                                     popUpTo("login") { inclusive = false }
                                 }
                             }
                         )
                     }
+
                     composable("home") {
-                        BottomNavBar(navController)
+                        BottomNavBarScreen(navController)
                     }
                 }
             }

@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,64 +18,58 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.myapplication.AddPlant
+import com.example.myapplication.Home
+import com.example.myapplication.Profile
 import com.example.myapplication.MainViewModel
-import com.example.myapplication.ui.screens.*
+//import com.example.myapplication.ui.screens.*
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {
-    var selectedItem by remember { mutableStateOf(0) }
+    val items = listOf("home", "addplant", "profile")
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     Scaffold(
         bottomBar = {
-            BottomNavigation {
-                BottomNavigationItem(
-                    selected = selectedItem == 0,
-                    onClick = {
-                        selectedItem = 0
-                        navController.navigate("home")
-                    },
-                    label = { Text("Home") },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") }
-                )
-                BottomNavigationItem(
-                    selected = selectedItem == 1,
-                    onClick = {
-                        selectedItem = 1
-                        navController.navigate("addPlant")
-                    },
-                    label = { Text("Tambah") },
-                    icon = { Icon(Icons.Default.Add, contentDescription = "Tambah") }
-                )
-                BottomNavigationItem(
-                    selected = selectedItem == 2,
-                    onClick = {
-                        selectedItem = 2
-                        navController.navigate("profile")
-                    },
-                    label = { Text("Profile") },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") }
-                )
+            NavigationBar {
+                items.forEach { screen ->
+                    NavigationBarItem(
+                        selected = currentRoute == screen,
+                        onClick = {
+                            if (currentRoute != screen) {
+                                navController.navigate(screen) {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = when (screen) {
+                                    "home" -> Icons.Default.Home
+                                    "addplant" -> Icons.Default.Add
+                                    "profile" -> Icons.Default.Person
+                                    else -> Icons.Default.Home
+                                },
+                                contentDescription = null
+                            )
+                        },
+                        label = { Text(screen.replaceFirstChar { it.uppercase() }) }
+                    )
+                }
             }
         }
     ) { innerPadding ->
         NavHost(
-            navController,
-            startDestination = "walletComponent",
+            navController = navController,
+            startDestination = "home",
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") { Home(navController) }
-            composable("addPlant") { AddPlant() }
+            composable("addplant") { AddPlant() }
             composable("profile") { Profile() }
-            composable("walletComponent") {
-                val viewModel: MainViewModel = hiltViewModel()
-                val state by viewModel.uiState.collectAsState()
-
-                WalletComponent(
-                    isConnecting = state.isConnecting,
-                    balance = state.balance,
-                    eventSink = { event -> viewModel.eventSink(event) }
-                )
-            }
         }
     }
 }

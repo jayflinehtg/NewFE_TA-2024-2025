@@ -67,28 +67,31 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = ethereum.connect()) {
                 is Result.Success -> {
+                    val address = ethereum.selectedAddress
+                    PreferencesHelper.saveMetaMaskConnectionStatus(context, true)
+                    PreferencesHelper.saveWalletAddress(context, address) // simpan ke pref
+
                     _uiState.update {
                         it.copy(
                             isConnecting = true,
                             shouldShowWalletConnect = false,
-                            balance = "0.0 ETH" // Nilai default saldo setelah koneksi berhasil
+                            walletAddress = address, // ✅ tambahkan ini
+                            isGuest = false,         // ✅ pastikan bukan guest
+                            balance = "0.0 ETH"
                         )
                     }
-                    PreferencesHelper.saveMetaMaskConnectionStatus(context, true)
-                    updateBalance() // Fetch saldo setelah koneksi berhasil
+
+                    updateBalance()
                 }
                 is Result.Error -> {
                     _uiState.update { it.copy(isConnecting = false) }
-                    val errorMessage = when (result.error) {
-                        //is io.metamask.androidsdk.exception.EthereumException.ConnectionFailed -> "Gagal terhubung ke MetaMask."
-                        //is io.metamask.androidsdk.exception.EthereumException.UserRejected -> "Permintaan koneksi ditolak oleh pengguna."
-                        else -> "Terjadi kesalahan: ${result.error.message}"
-                    }
+                    val errorMessage = "Terjadi kesalahan: ${result.error.message}"
                     showMessage(errorMessage)
                 }
             }
         }
     }
+
 
     // Fungsi untuk mendapatkan saldo wallet dari MetaMask SDK
     private fun updateBalance() {
@@ -136,13 +139,20 @@ class MainViewModel @Inject constructor(
             it.copy(
                 isConnecting = false,
                 shouldShowWalletConnect = false,
-                balance = "Guest"
+                balance = "Guest",
+                isGuest = true // ✅ tambahkan ini
             )
         }
         PreferencesHelper.saveMetaMaskConnectionStatus(context, false)
         PreferencesHelper.saveUserRegistrationStatus(context, false)
         showMessage("Masuk sebagai Tamu")
+
+        viewModelScope.launch {
+            _uiEvent.emit(UiEvent.NavigateTo("home"))
+        }
     }
+
+
 
     fun onRegisterSuccess(walletAddress: String) {
         try {

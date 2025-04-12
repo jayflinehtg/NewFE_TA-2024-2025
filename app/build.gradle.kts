@@ -81,4 +81,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("androidx.compose.material:material:1.7.8")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation ("androidx.compose.ui:ui-text:1.5.0")
 }
