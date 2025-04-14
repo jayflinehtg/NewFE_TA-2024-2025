@@ -1,10 +1,16 @@
 package com.example.myapplication.services
 
+import com.example.myapplication.data.DataClassResponses.LoginResponse
+import com.example.myapplication.data.DataClassResponses.LogoutResponse
+import com.example.myapplication.data.DataClassResponses.RegisterResponse
+import com.example.myapplication.data.DataClassResponses.UserInfoResponse
 import com.example.myapplication.data.LoginRequest
 import com.example.myapplication.data.User
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -19,18 +25,14 @@ interface ApiService {
     fun loginUser(
         @Body loginRequest: LoginRequest
     ): Call<LoginResponse>
+
+    // mendapatkan data user dari blockchain
+    @GET("auth/user/{walletAddress}")
+    suspend fun getUserInfo(
+        @Path("walletAddress") walletAddress: String
+    ): UserInfoResponse
+
+    // Endpoint untuk logout pengguna
+    @POST("auth/logout")
+    suspend fun logoutUser(): Call<LogoutResponse>
 }
-
-// Data class untuk respons registrasi
-data class RegisterResponse(
-    val success: Boolean,
-    val txHash: String,
-    val message: String
-)
-
-// Data class untuk respons login
-data class LoginResponse(
-    val success: Boolean,
-    val token: String,
-    val message: String
-)

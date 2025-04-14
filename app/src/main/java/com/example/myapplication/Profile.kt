@@ -1,28 +1,37 @@
 package com.example.myapplication
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.PreferencesHelper
 
 @Composable
-fun Profile(navController: NavController, onLogout: () -> Unit) {
+fun Profile(navController: NavController) {
+    val viewModel: MainViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val walletAddress = PreferencesHelper.getWalletAddress(context).orEmpty()
+    val isLoggedIn = PreferencesHelper.getJwtToken(context) != null // Cek keberadaan JWT token
 
-    // Data dummy untuk tampilan
-    val fullName = "Nama Pengguna"
-    val email = "pengguna@example.com"
-    val walletAddress = "0x1234567890abcdef"
+    // Ambil data user dari PreferencesHelper saat composable dibuat
+    LaunchedEffect(Unit) {
+        viewModel.fetchUserDataFromPrefs()
+    }
 
     Column(
         modifier = Modifier
@@ -32,42 +41,54 @@ fun Profile(navController: NavController, onLogout: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.plant), // Replace with R.drawable.plant
-            contentDescription = "Logo Tanaman",
-            modifier = Modifier
-                .size(130.dp)
-                .padding(bottom = 14.dp)
-        )
         Text(
-            text = fullName,
-            fontSize = 28.sp, // Ukuran font "Nama Pengguna"
+            text = uiState.fullName ?: "Nama Pengguna",
+            fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
-            color = colorResource(id = R.color.dark_green), // Warna hijau untuk "Nama Pengguna"
-            modifier = Modifier.padding(bottom = 22.dp)
+            color = colorResource(id = R.color.dark_green),
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+
         Text(
             text = "Public Key",
-            fontSize = 14.sp, // Ukuran font "Public Key"
+            fontSize = 14.sp,
             color = Color.Gray,
             modifier = Modifier.padding(bottom = 6.dp)
         )
 
         Text(
-            text = email,
-            fontSize = 16.sp, // Ukuran font email
+            text = walletAddress,
+            fontSize = 16.sp,
             color = Color.Gray,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // Tombol Logout untuk logout dan disconnect wallet
+        Text(
+            text = if (isLoggedIn) "Sudah Login" else "Belum Login",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = if (isLoggedIn) Color.Green else Color.Red,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
+        // Tombol Keluar
         Button(
-            onClick = { onLogout() }, // Memanggil callback logout yang diberikan
+            onClick = { viewModel.logout() },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
             shape = RoundedCornerShape(50),
             modifier = Modifier.fillMaxWidth(0.6f)
         ) {
             Text("Keluar", fontSize = 14.sp, color = Color.White)
+        }
+
+        // Tampilkan pesan jika ada
+        uiState.message?.let { message ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = message,
+                color = if (message.contains("berhasil", ignoreCase = true)) Color.Green else Color.Red,
+                fontSize = 14.sp
+            )
         }
     }
 }

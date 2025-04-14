@@ -19,9 +19,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myapplication.data.DataClassResponses.LoginResponse
 import com.example.myapplication.data.LoginRequest
 import com.example.myapplication.data.PreferencesHelper
-import com.example.myapplication.services.LoginResponse
 import com.example.myapplication.services.RetrofitClient
 import retrofit2.Call
 import retrofit2.Callback

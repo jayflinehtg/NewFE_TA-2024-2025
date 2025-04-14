@@ -20,8 +20,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myapplication.data.DataClassResponses.RegisterResponse
 import com.example.myapplication.data.PreferencesHelper
-import com.example.myapplication.services.RegisterResponse
 import com.example.myapplication.services.RetrofitClient
 import retrofit2.Call
 import retrofit2.Callback

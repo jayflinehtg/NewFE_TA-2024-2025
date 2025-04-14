@@ -62,14 +62,7 @@ fun BottomNavBarScreen(rootNavController: NavHostController) {
                 AddPlant()
             }
             composable("profile") {
-                Profile(
-                    navController = rootNavController,
-                    onLogout = {
-                        rootNavController.navigate("walletComponent") {
-                            popUpTo("home") { inclusive = true }
-                        }
-                    }
-                )
+                Profile(navController = rootNavController)
             }
         }
     }
