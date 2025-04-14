@@ -3,6 +3,7 @@ package com.example.myapplication
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.example.myapplication.data.DataClassResponses
 import com.example.myapplication.data.EventSink
 import com.example.myapplication.data.PreferencesHelper
 import com.example.myapplication.data.UiEvent
@@ -62,13 +63,45 @@ class MainViewModel @Inject constructor(
     }
 
     fun fetchUserDataFromPrefs() {
-        val fullName = PreferencesHelper.getUserFullName(context) ?: "Nama Pengguna"
+        val walletAddress = PreferencesHelper.getWalletAddress(context)
         val isLoggedIn = PreferencesHelper.getJwtToken(context) != null
-        _uiState.update { state ->
-            state.copy(
-                fullName = fullName,
-                isLoggedIn = isLoggedIn
-            )
+
+        walletAddress?.let {
+            viewModelScope.launch {
+                try {
+                    val response = apiService.getUserInfo(it)
+                    Log.d("MainViewModel", "User Info Response: $response")
+                    val fetchedFullName = response.userData.fullName
+                    _uiState.update { state ->
+                        state.copy(
+                            fullName = fetchedFullName ?: state.fullName ?: "Nama Pengguna",
+                            isLoggedIn = response.userData.isLoggedIn
+                        )
+                    }
+                    fetchedFullName?.let {
+                        PreferencesHelper.saveUserFullName(context, it)
+                    }
+                } catch (e: Exception) {
+                    Log.e("MainViewModel", "Error fetching user info: ${e.message}")
+                    // Jika gagal, tetap gunakan fullName dari PreferencesHelper
+                    val savedFullName = PreferencesHelper.getUserFullName(context) ?: "Nama Pengguna"
+                    _uiState.update { state ->
+                        state.copy(
+                            fullName = savedFullName,
+                            isLoggedIn = isLoggedIn
+                        )
+                    }
+                }
+            }
+        } ?: run {
+            // Jika walletAddress tidak ada, ambil data dari PreferencesHelper saja
+            val savedFullName = PreferencesHelper.getUserFullName(context) ?: "Nama Pengguna"
+            _uiState.update { state ->
+                state.copy(
+                    fullName = savedFullName,
+                    isLoggedIn = isLoggedIn
+                )
+            }
         }
     }
 
@@ -87,19 +120,19 @@ class MainViewModel @Inject constructor(
                             walletAddress = null,
                             fullName = null,
                             isGuest = false,
-                            message = "Berhasil keluar." // Set success message
+                            message = "Berhasil keluar."
                         )
                     }
                     _uiEvent.emit(UiEvent.NavigateTo("walletComponent"))
                     _uiEvent.emit(UiEvent.Message("Berhasil keluar."))
                 } else {
                     Log.e("MainViewModel", "Logout failed: ${response.errorBody()?.string()}")
-                    _uiState.update { it.copy(isConnecting = false, message = "Gagal keluar.") } // Set error message
+                    _uiState.update { it.copy(isConnecting = false, message = "Gagal keluar.") }
                     _uiEvent.emit(UiEvent.Message("Gagal keluar."))
                 }
             } catch (e: Exception) {
-                Log.e("MainViewModel", "Logout error: ${e.message}")
-                _uiState.update { it.copy(isConnecting = false, message = "Terjadi kesalahan saat keluar.") } // Set error message
+                Log.e("MainViewModel", "Logout error: ${e.message}", e)
+                _uiState.update { it.copy(isConnecting = false, message = "Terjadi kesalahan saat keluar.") }
                 _uiEvent.emit(UiEvent.Message("Terjadi kesalahan saat keluar."))
             } finally {
                 _uiState.update { it.copy(isConnecting = false) }
@@ -213,7 +246,7 @@ class MainViewModel @Inject constructor(
     fun onRegisterSuccess(walletAddress: String) {
         try {
             PreferencesHelper.saveWalletAddress(context, walletAddress)
-            fetchUserDataFromPrefs ()
+            fetchUserDataFromPrefs()
             showMessage("Pendaftaran Berhasil!")
         } catch (e: Exception) {
             showMessage("Terjadi kesalahan saat pendaftaran: ${e.message}")
@@ -223,7 +256,7 @@ class MainViewModel @Inject constructor(
     init {
         initializeConnection()
         if (PreferencesHelper.isMetaMaskConnected(context) && !PreferencesHelper.getWalletAddress(context).isNullOrEmpty()) {
-            fetchUserDataFromPrefs ()
+            fetchUserDataFromPrefs()
         }
     }
 
@@ -238,7 +271,7 @@ class MainViewModel @Inject constructor(
                     )
                 }
                 updateBalance()
-                fetchUserDataFromPrefs ()
+                fetchUserDataFromPrefs()
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.example.myapplication.data
 
+import com.google.gson.annotations.SerializedName
+
 class DataClassResponses {
 
     // Data class untuk respons registrasi
@@ -22,9 +24,14 @@ class DataClassResponses {
         val txHash: String? = null
     )
 
+    data class UserData(
+        @SerializedName("fullName") val fullName: String,
+        @SerializedName("isRegistered") val isRegistered: Boolean,
+        @SerializedName("isLoggedIn") val isLoggedIn: Boolean
+    )
+
     data class UserInfoResponse(
-        val fullName: String,
-        val isRegistered: Boolean,
-        val isLoggedIn: Boolean
+        @SerializedName("success") val success: Boolean,
+        @SerializedName("userData") val userData: UserData // Ini yang penting!
     )
 }

@@ -26,7 +26,7 @@ interface ApiService {
         @Body loginRequest: LoginRequest
     ): Call<LoginResponse>
 
-    // mendapatkan data user dari blockchain
+    // mendapatkan data user
     @GET("auth/user/{walletAddress}")
     suspend fun getUserInfo(
         @Path("walletAddress") walletAddress: String

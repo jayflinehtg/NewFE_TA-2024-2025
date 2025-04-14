@@ -92,15 +92,3 @@ fun Profile(navController: NavController) {
         }
     }
 }
-
-@Composable
-fun Profile() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("Profile Screen")
-        // Tambahkan konten profil Anda di sini
-    }
-}
