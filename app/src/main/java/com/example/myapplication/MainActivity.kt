@@ -3,14 +3,10 @@ package com.example.myapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material.SnackbarHost
-import androidx.compose.material.SnackbarHostState
-import androidx.compose.material.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavType
@@ -46,20 +42,8 @@ class MainActivity : ComponentActivity() {
                 val snackbarHostState = remember { SnackbarHostState() }
                 val scope = rememberCoroutineScope()
                 val context = LocalContext.current
-                val detailScreen = DetailScreen()
 
-                SnackbarHost(hostState = snackbarHostState)
-
-                // Navigasi otomatis ke register jika wallet terhubung & bukan guest
-                LaunchedEffect(state.walletAddress, state.isGuest) {
-                    if (state.walletAddress != null && !state.isGuest) {
-                        navController.navigate("register") {
-                            popUpTo("walletComponent") { inclusive = true }
-                        }
-                    }
-                }
-
-                // Handle UI events dari ViewModel
+                // Handle UI events dari ViewModel (navigasi & pesan)
                 LaunchedEffect(Unit) {
                     viewModel.uiEvent.collect { event ->
                         when (event) {
@@ -68,72 +52,86 @@ class MainActivity : ComponentActivity() {
                                     popUpTo("walletComponent") { inclusive = true }
                                 }
                             }
-                            else -> {}
+                            is UiEvent.Message -> {
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(event.message)
+                                }
+                            }
                         }
                     }
                 }
 
+                // Snackbar Host untuk menampilkan pesan error/sukses
+                SnackbarHost(hostState = snackbarHostState)
+
                 NavHost(
                     navController = navController,
-                    startDestination = "walletComponent"
+                    startDestination = Screen.WalletComponent.route // Mulai dari WalletComponent
                 ) {
-                    composable("walletComponent") {
+                    // Wallet Component Screen
+                    composable(Screen.WalletComponent.route) {
                         WalletComponent(
                             isConnecting = state.isConnecting,
                             balance = state.balance,
                             eventSink = { event -> viewModel.eventSink(event) }
                         )
                     }
+
+                    // Register Screen
                     composable(Screen.Register.route) {
                         RegisterScreen(
                             navController = navController,
                             onRegisterSuccess = { walletAddress ->
                                 viewModel.onRegisterSuccess(walletAddress)
-                                navController.navigate("home") {
-                                    popUpTo("register") { inclusive = true }
+                                // Navigasi ke LoginScreen setelah berhasil registrasi
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(Screen.Register.route) { inclusive = true }
                                 }
                             },
                             onNavigateToLogin = {
-                                navController.navigate("login") {
-                                    popUpTo("register") { inclusive = false }
+                                navController.navigate(Screen.Login.route) {
+                                    popUpTo(Screen.Register.route) { inclusive = false }
                                 }
                             }
                         )
                     }
 
+                    // Login Screen
                     composable(Screen.Login.route) {
                         LoginScreen(
                             navController = navController,
-                            walletAddress = state.walletAddress,
                             onLoginSuccess = {
-                                navController.navigate("home") {
-                                    popUpTo("login") { inclusive = true }
+                                navController.navigate(Screen.Home.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = true }
                                 }
                             },
                             onNavigateToRegister = {
-                                navController.navigate("register") {
-                                    popUpTo("login") { inclusive = false }
+                                navController.navigate(Screen.Register.route) {
+                                    popUpTo(Screen.Login.route) { inclusive = false }
                                 }
                             }
                         )
                     }
 
-                    composable("home") {
+                    // Home Screen (Bottom Navigation)
+                    composable(Screen.Home.route) {
                         BottomNavBarScreen(navController)
                     }
-                composable(
-                    Screen.Detail.route,
-                    arguments = listOf(navArgument("plantId") { type = NavType.StringType })
-                ) { backStackEntry ->
-                val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
-                if (plantId.isNotEmpty()) {
-                    detailScreen.Content(plantId = plantId) { navController.popBackStack() }
-                } else {
-                    Text("Plant ID tidak valid.")
+
+                    // Detail Screen (Dynamic Plant ID)
+                    composable(
+                        Screen.Detail.route,
+                        arguments = listOf(navArgument("plantId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
+                        if (plantId.isNotEmpty()) {
+                            DetailScreen().Content(plantId = plantId) { navController.popBackStack() }
+                        } else {
+                            Text("Plant ID tidak valid.")
+                        }
+                    }
                 }
-            }
             }
         }
     }
-}
 }

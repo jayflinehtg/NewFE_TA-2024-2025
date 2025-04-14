@@ -68,30 +68,35 @@ class MainViewModel @Inject constructor(
             when (val result = ethereum.connect()) {
                 is Result.Success -> {
                     val address = ethereum.selectedAddress
-                    PreferencesHelper.saveMetaMaskConnectionStatus(context, true)
-                    PreferencesHelper.saveWalletAddress(context, address) // simpan ke pref
+                    if (address.isNotEmpty()) {
+                        PreferencesHelper.saveMetaMaskConnectionStatus(context, true)
+                        PreferencesHelper.saveWalletAddress(context, address)
 
-                    _uiState.update {
-                        it.copy(
-                            isConnecting = true,
-                            shouldShowWalletConnect = false,
-                            walletAddress = address, // ✅ tambahkan ini
-                            isGuest = false,         // ✅ pastikan bukan guest
-                            balance = "0.0 ETH"
-                        )
+                        // Pastikan walletAddress diupdate sebelum navigasi
+                        _uiState.update {
+                            it.copy(
+                                walletAddress = address,
+                                isConnecting = false, // ✅ Matikan loading setelah berhasil
+                                shouldShowWalletConnect = false,
+                                isGuest = false,
+                                balance = "0.0 ETH"
+                            )
+                        }
+
+                        // Navigasi hanya jika address valid
+                        _uiEvent.emit(UiEvent.NavigateTo("login"))
+                        updateBalance()
+                    } else {
+                        showMessage("Gagal mendapatkan alamat wallet")
                     }
-
-                    updateBalance()
                 }
                 is Result.Error -> {
                     _uiState.update { it.copy(isConnecting = false) }
-                    val errorMessage = "Terjadi kesalahan: ${result.error.message}"
-                    showMessage(errorMessage)
+                    showMessage("Terjadi kesalahan: ${result.error.message}")
                 }
             }
         }
     }
-
 
     // Fungsi untuk mendapatkan saldo wallet dari MetaMask SDK
     private fun updateBalance() {
@@ -126,7 +131,12 @@ class MainViewModel @Inject constructor(
     // Fungsi untuk menangani logout atau disconnect dari MetaMask wallet
     private fun disconnectWallet() {
         _uiState.update {
-            it.copy(isConnecting = false, balance = null, shouldShowWalletConnect = true)
+            it.copy(
+                walletAddress = null, // ✅ Reset walletAddress
+                isConnecting = false,
+                balance = null,
+                shouldShowWalletConnect = true
+            )
         }
         ethereum.disconnect(true)
         PreferencesHelper.saveMetaMaskConnectionStatus(context, false)
@@ -137,22 +147,20 @@ class MainViewModel @Inject constructor(
     private fun handleGuestLogin() {
         _uiState.update {
             it.copy(
+                walletAddress = "", // ✅ Pastikan walletAddress kosong untuk guest
                 isConnecting = false,
                 shouldShowWalletConnect = false,
                 balance = "Guest",
-                isGuest = true // ✅ tambahkan ini
+                isGuest = true
             )
         }
         PreferencesHelper.saveMetaMaskConnectionStatus(context, false)
         PreferencesHelper.saveUserRegistrationStatus(context, false)
         showMessage("Masuk sebagai Tamu")
-
         viewModelScope.launch {
             _uiEvent.emit(UiEvent.NavigateTo("home"))
         }
     }
-
-
 
     fun onRegisterSuccess(walletAddress: String) {
         try {
@@ -168,10 +176,17 @@ class MainViewModel @Inject constructor(
         initializeConnection()
     }
 
+    // Inisialisasi Koneksi
     private fun initializeConnection() {
         viewModelScope.launch {
-            if (PreferencesHelper.isMetaMaskConnected(context)) {
-                _uiState.update { it.copy(isConnecting = true) }
+            val savedAddress = PreferencesHelper.getWalletAddress(context)
+            if (PreferencesHelper.isMetaMaskConnected(context) && !savedAddress.isNullOrEmpty()) {
+                _uiState.update {
+                    it.copy(
+                        walletAddress = savedAddress,
+                        isConnecting = true
+                    )
+                }
                 updateBalance()
             }
         }

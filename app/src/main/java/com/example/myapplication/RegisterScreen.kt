@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import com.example.myapplication.data.User
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -18,19 +20,37 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myapplication.data.PreferencesHelper
+import com.example.myapplication.services.RegisterResponse
+import com.example.myapplication.services.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController,
-                   onRegisterSuccess: (String) -> Unit,
-                   onNavigateToLogin: () -> Unit
+fun RegisterScreen(
+    navController: NavController,
+    onRegisterSuccess: (String) -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     val context = LocalContext.current
+    // Ambil walletAddress dari PreferencesHelper
+    val walletAddress = PreferencesHelper.getWalletAddress(context)
 
     var fullName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var fullNameError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
+
+    // Jika tidak ada walletAddress, navigasikan kembali ke WalletComponent
+    LaunchedEffect(walletAddress) {
+        if (walletAddress.isNullOrEmpty()) {
+            navController.navigate("walletComponent") {
+                popUpTo("register") { inclusive = true }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -148,7 +168,30 @@ fun RegisterScreen(navController: NavController,
 
                     // Tombol Daftar
                     Button(
-                        onClick = { /* Panggil fungsi register di sini jika diperlukan */ },
+                        onClick = {
+                            // Buat objek user dengan walletAddress yang diterima
+                            val user = User(fullName, walletAddress ?: "", password)
+
+                            // Panggil API untuk register
+                            RetrofitClient.apiService.registerUser(user).enqueue(object : Callback<RegisterResponse> {
+                                override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
+                                    if (response.isSuccessful) {
+                                        Log.d("API", "Register Success: ${response.body()?.txHash}")
+                                        onRegisterSuccess(walletAddress ?: "")
+                                        // Navigasi ke LoginScreen setelah berhasil
+                                        navController.navigate("login") {
+                                            popUpTo("register") { inclusive = true }
+                                        }
+                                    } else {
+                                        Log.d("API", "Register Failed: ${response.errorBody()?.string()}")
+                                    }
+                                }
+
+                                override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
+                                    Log.d("API", "Error: ${t.message}")
+                                }
+                            })
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B5E20)),
                         shape = RoundedCornerShape(50),
                         modifier = Modifier.fillMaxWidth(0.8f)

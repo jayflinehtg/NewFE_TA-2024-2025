@@ -4,6 +4,6 @@ data class UiState(
     val isConnecting: Boolean = false,
     val balance: String? = null,
     val walletAddress: String? = null,
-    val shouldShowWalletConnect: Boolean = true,
-    val isGuest: Boolean = false
+    val isGuest: Boolean = false,
+    val shouldShowWalletConnect: Boolean = true
 )

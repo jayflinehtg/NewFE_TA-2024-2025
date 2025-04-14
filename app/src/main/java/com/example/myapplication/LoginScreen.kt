@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,25 +16,43 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import io.metamask.androidsdk.Result
+import com.example.myapplication.data.LoginRequest
+import com.example.myapplication.data.PreferencesHelper
+import com.example.myapplication.services.LoginResponse
+import com.example.myapplication.services.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController, walletAddress: String?, onLoginSuccess: () -> Unit, onNavigateToRegister: () -> Unit) {
+fun LoginScreen(
+    navController: NavController,
+    onLoginSuccess: () -> Unit,
+    onNavigateToRegister: () -> Unit
+) {
+    val context = LocalContext.current
+    val walletAddress = PreferencesHelper.getWalletAddress(context)
+
     var password by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf<String?>(null) }
-    var isWalletConnected by remember { mutableStateOf(walletAddress != null) }
 
-    val context = LocalContext.current
+    // Jika tidak ada walletAddress, navigasikan kembali ke WalletComponent
+    LaunchedEffect(walletAddress) {
+        if (walletAddress.isNullOrEmpty()) {
+            navController.navigate("walletComponent") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorResource(id = R.color.soft_green)), // Soft green background
+            .background(colorResource(id = R.color.soft_green)),
         contentAlignment = Alignment.TopCenter
     ) {
         Column(
@@ -43,9 +62,9 @@ fun LoginScreen(navController: NavController, walletAddress: String?, onLoginSuc
                 .fillMaxWidth()
                 .padding(top = 40.dp)
         ) {
-            // ==== LOGO ====
+            // LOGO
             Image(
-                painter = painterResource(id = R.drawable.plant), // Replace with R.drawable.plant
+                painter = painterResource(id = R.drawable.plant), // Ganti dengan resource logo yang sesuai
                 contentDescription = "Logo Tanaman",
                 modifier = Modifier
                     .size(130.dp)
@@ -92,7 +111,7 @@ fun LoginScreen(navController: NavController, walletAddress: String?, onLoginSuc
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp),
                         isError = passwordError != null,
-                        colors = TextFieldDefaults.colors( // Menggunakan TextFieldDefaults.colors
+                        colors = TextFieldDefaults.colors(
                             unfocusedContainerColor = Color.White,
                             focusedContainerColor = Color.White,
                             disabledContainerColor = Color.White,
@@ -112,8 +131,38 @@ fun LoginScreen(navController: NavController, walletAddress: String?, onLoginSuc
 
                     // Login Button
                     Button(
-                        onClick = { /* Handle login */ },
-                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)), // Warna hijau gelap
+                        onClick = {
+                            // Pastikan walletAddress tidak null
+                            if (walletAddress != null) {
+                                // Buat objek UserLogin untuk mengirim login request
+                                val userLogin = LoginRequest(walletAddress, password)
+
+                                // Panggil API untuk login
+                                RetrofitClient.apiService.loginUser(userLogin).enqueue(object : Callback<LoginResponse> {
+                                    override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                                        if (response.isSuccessful) {
+                                            Log.d("API", "Login Success: ${response.body()?.message}")
+                                            // Menyimpan token JWT ke PreferencesHelper atau penyimpanan lokal
+                                            val token = response.body()?.token ?: ""
+                                            PreferencesHelper.saveJwtToken(context, token)
+
+                                            // Menavigasi ke Home screen setelah berhasil login
+                                            onLoginSuccess()
+                                            navController.navigate("home") {
+                                                popUpTo("login") { inclusive = true }
+                                            }
+                                        } else {
+                                            Log.d("API", "Login Failed: ${response.errorBody()?.string()}")
+                                        }
+                                    }
+
+                                    override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                                        Log.d("API", "Error: ${t.message}")
+                                    }
+                                })
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)),
                         shape = RoundedCornerShape(50),
                         modifier = Modifier.fillMaxWidth(0.8f)
                     ) {
@@ -125,7 +174,7 @@ fun LoginScreen(navController: NavController, walletAddress: String?, onLoginSuc
                         Text(
                             "Belum memiliki akun? Daftar disini",
                             fontSize = 12.sp,
-                            color = colorResource(id = R.color.purple) // Purple
+                            color = colorResource(id = R.color.purple)
                         )
                     }
                 }

@@ -33,7 +33,7 @@ internal object AppModule {
                 sdkOptions = SDKOptions(
                     infuraAPIKey = BuildConfig.MY_INFURA_KEY, // Tetap gunakan Infura jika diperlukan
                     readonlyRPCMap = mapOf(
-                        "Ganache" to "http://0.0.0.0:7545" // Tambahkan Ganache RPC Server
+                        "Ganache" to "http://192.168.50.94:7545" // Tambahkan Ganache RPC Server
                     )
                 )
             )

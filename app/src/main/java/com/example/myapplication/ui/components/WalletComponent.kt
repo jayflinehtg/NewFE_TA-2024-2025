@@ -69,22 +69,19 @@ fun WalletComponent(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        Button(
-                            onClick = { eventSink(EventSink.Disconnect) },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
-                            shape = RoundedCornerShape(50),
-                            modifier = Modifier.fillMaxWidth(0.8f)
-                        ) {
-                            Text("Keluar", fontSize = 14.sp, color = Color.White)
-                        }
                     } else {
                         Button(
                             onClick = { eventSink(EventSink.Connect) },
+                            enabled = !isConnecting,
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF388E3C)),
                             shape = RoundedCornerShape(50),
                             modifier = Modifier.fillMaxWidth(0.8f)
                         ) {
-                            Text("Connect Wallet", fontSize = 14.sp, color = Color.White)
+                            if (isConnecting) {
+                                CircularProgressIndicator(color = Color.White)
+                            } else {
+                                Text("Connect Wallet", fontSize = 14.sp, color = Color.White)
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -95,8 +92,8 @@ fun WalletComponent(
 
                         TextButton(onClick = { eventSink(EventSink.GuestLogin) }) {
                             Text(
-                                text = "As Guest",
-                                fontSize = 14.sp,
+                                text = "Lanjutkan sebagai Tamu (Tanpa Wallet)",
+                                fontSize = 10.sp,
                                 color = Color(0xFF388E3C)
                             )
                         }
