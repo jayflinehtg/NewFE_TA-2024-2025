@@ -159,20 +159,26 @@ class MainViewModel @Inject constructor(
                 is Result.Success -> {
                     val address = ethereum.selectedAddress
                     if (address.isNotEmpty()) {
+                        // Menyimpan status koneksi MetaMask dan alamat wallet ke Preferences
                         PreferencesHelper.saveMetaMaskConnectionStatus(context, true)
                         PreferencesHelper.saveWalletAddress(context, address)
 
+                        // Memperbarui UI state dengan informasi terbaru
+                        val balance = updateBalance()
                         _uiState.update {
                             it.copy(
                                 walletAddress = address,
                                 isConnecting = false,
                                 shouldShowWalletConnect = false,
                                 isGuest = false,
-                                balance = "0.0 ETH"
+                                balance = balance.toString()
                             )
                         }
+
+                        // Navigasi ke layar login (misalnya)
                         _uiEvent.emit(UiEvent.NavigateTo("login"))
-                        updateBalance()
+
+                        // Menyegarkan data pengguna setelah wallet terhubung
                         fetchUserDataFromPrefs()
                     } else {
                         showMessage("Gagal mendapatkan alamat wallet")
@@ -186,6 +192,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
+
     private fun updateBalance() {
         if (ethereum.selectedAddress.isNotEmpty()) {
             viewModelScope.launch {
@@ -197,13 +204,22 @@ class MainViewModel @Inject constructor(
                 )
                 when (balanceResult) {
                     is Result.Success.Item -> {
+                        // Menghapus prefix '0x' dan mengonversi hex ke BigInteger
                         val cleanHexString = if (balanceResult.value.startsWith("0x")) {
                             balanceResult.value.substring(2)
                         } else {
                             balanceResult.value
                         }
-                        _uiState.update {
-                            it.copy(balance = "${BigInteger(cleanHexString, 16)} ETH")
+
+                        // Mengonversi hex menjadi BigInteger, lalu ke jumlah ETH
+                        try {
+                            val balanceInWei = BigInteger(cleanHexString, 16) // Mengambil saldo dalam wei
+                            val balanceInEth = balanceInWei.divide(BigInteger.TEN.pow(18)) // Mengonversi ke ETH
+                            _uiState.update {
+                                it.copy(balance = "$balanceInEth ETH") // Menampilkan saldo dalam ETH
+                            }
+                        } catch (e: Exception) {
+                            showMessage("Gagal mengonversi saldo: ${e.message}")
                         }
                     }
                     is Result.Error -> showMessage(balanceResult.error.message)

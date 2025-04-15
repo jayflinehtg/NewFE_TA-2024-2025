@@ -32,6 +32,6 @@ class DataClassResponses {
 
     data class UserInfoResponse(
         @SerializedName("success") val success: Boolean,
-        @SerializedName("userData") val userData: UserData // Ini yang penting!
+        @SerializedName("userData") val userData: UserData
     )
 }

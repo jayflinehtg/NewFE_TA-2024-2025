@@ -64,6 +64,15 @@ fun Profile(navController: NavController) {
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
+        // Tampilkan saldo jika tersedia
+        Text(
+            text = "Balance: ${uiState.balance ?: "NA"}", // Menampilkan saldo jika tersedia
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
+
         Text(
             text = if (isLoggedIn) "Sudah Login" else "Belum Login",
             fontSize = 16.sp,

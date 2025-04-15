@@ -73,6 +73,7 @@ class MainActivity : ComponentActivity() {
                         WalletComponent(
                             isConnecting = state.isConnecting,
                             balance = state.balance,
+                            isGuest = state.isGuest,
                             eventSink = { event -> viewModel.eventSink(event) }
                         )
                     }

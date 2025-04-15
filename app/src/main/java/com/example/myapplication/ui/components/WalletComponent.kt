@@ -17,6 +17,7 @@ import com.example.myapplication.data.EventSink
 fun WalletComponent(
     isConnecting: Boolean,
     balance: String?,
+    isGuest: Boolean,
     eventSink: (EventSink) -> Unit
 ) {
     Surface(
@@ -60,16 +61,43 @@ fun WalletComponent(
                         textAlign = TextAlign.Center
                     )
 
-                    if (isConnecting && balance != null) {
+                    // Periksa apakah pengguna adalah tamu
+                    if (isGuest) {
+                        // Jika tamu, tampilkan informasi tamu
                         Text(
-                            text = "Saldo: $balance",
-                            fontSize = 16.sp,
-                            color = Color.DarkGray
+                            text = "Anda sedang menggunakan aplikasi sebagai Tamu.",
+                            fontSize = 14.sp,
+                            color = Color.Gray,
+                            modifier = Modifier
+                                .padding(bottom = 16.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Center
                         )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
                     } else {
+                        // Jika wallet berhasil terhubung, tampilkan saldo
+                        if (isConnecting && balance != null) {
+                            Text(
+                                text = "Saldo: $balance",
+                                fontSize = 16.sp,
+                                color = Color.DarkGray
+                            )
+
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+                    }
+
+                    // Tombol Connect atau GuestLogin berdasarkan status isGuest
+                    if (isGuest) {
+                        // Tombol untuk melanjutkan sebagai tamu
+                        TextButton(onClick = { eventSink(EventSink.GuestLogin) }) {
+                            Text(
+                                text = "Lanjutkan sebagai Tamu (Tanpa Wallet)",
+                                fontSize = 10.sp,
+                                color = Color(0xFF388E3C)
+                            )
+                        }
+                    } else {
+                        // Tombol untuk menghubungkan wallet
                         Button(
                             onClick = { eventSink(EventSink.Connect) },
                             enabled = !isConnecting,
@@ -90,6 +118,7 @@ fun WalletComponent(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
+                        // Tautan untuk melanjutkan sebagai tamu
                         TextButton(onClick = { eventSink(EventSink.GuestLogin) }) {
                             Text(
                                 text = "Lanjutkan sebagai Tamu (Tanpa Wallet)",
