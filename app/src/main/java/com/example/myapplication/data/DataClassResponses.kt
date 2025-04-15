@@ -34,4 +34,22 @@ class DataClassResponses {
         @SerializedName("success") val success: Boolean,
         @SerializedName("userData") val userData: UserData
     )
+
+    // Data Class untuk AddPlant Request
+    data class AddPlantRequest(
+        @SerializedName("name") val name: String,
+        @SerializedName("namaLatin") val namaLatin: String,
+        @SerializedName("komposisi") val komposisi: String,
+        @SerializedName("kegunaan") val kegunaan: String,
+        @SerializedName("caraPengolahan") val caraPengolahan: String,
+        @SerializedName("ipfsHash") val ipfsHash: String
+    )
+
+    // Data Class untuk AddPlant Response
+    data class AddPlantResponse(
+        @SerializedName("success") val success: Boolean,
+        @SerializedName("message") val message: String,
+        @SerializedName("txHash") val txHash: String,
+        @SerializedName("plantId") val plantId: String
+    )
 }
