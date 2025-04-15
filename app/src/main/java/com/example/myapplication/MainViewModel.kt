@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.math.BigInteger
 import javax.inject.Inject
 
@@ -109,7 +110,19 @@ class MainViewModel @Inject constructor(
         _uiState.update { it.copy(isConnecting = true, message = null) }
         viewModelScope.launch {
             try {
-                val response = apiService.logoutUser().execute()
+                val jwtTokenRaw = PreferencesHelper.getJwtToken(context)
+                val token = jwtTokenRaw?.let { if (it.startsWith("Bearer ")) it else "Bearer $it" } ?: ""
+
+                if (token.isEmpty()) {
+                    _uiState.update { it.copy(isConnecting = false, message = "Token tidak ditemukan, logout gagal.") }
+                    _uiEvent.emit(UiEvent.Message("Token tidak ditemukan, logout gagal."))
+                    return@launch
+                }
+
+                val response = withContext(Dispatchers.IO) {
+                    apiService.logoutUser(token).execute()
+                }
+
                 if (response.isSuccessful) {
                     PreferencesHelper.clearJwtToken(context)
                     PreferencesHelper.saveMetaMaskConnectionStatus(context, false)
@@ -218,7 +231,13 @@ class MainViewModel @Inject constructor(
         PreferencesHelper.clearWalletAddress(context)
         PreferencesHelper.clearUserFullName(context)
         showMessage("Disconnected!")
+    }
+
+    fun logoutAndDisconnect() {
         viewModelScope.launch {
+            logout()
+            eventSink(EventSink.Disconnect)
+            Log.d("Logout And Disconnect", "Proses Logout telah berhasil")
             _uiEvent.emit(UiEvent.NavigateTo("walletComponent"))
         }
     }

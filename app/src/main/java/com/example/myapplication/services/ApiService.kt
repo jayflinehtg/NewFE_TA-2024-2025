@@ -9,6 +9,7 @@ import com.example.myapplication.data.User
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -34,5 +35,7 @@ interface ApiService {
 
     // Endpoint untuk logout pengguna
     @POST("auth/logout")
-    suspend fun logoutUser(): Call<LogoutResponse>
+    fun logoutUser(
+        @Header("Authorization") authorization: String
+    ): Call<LogoutResponse>
 }

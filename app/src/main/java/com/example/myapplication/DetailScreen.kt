@@ -35,7 +35,8 @@ class DetailScreen {
     @Composable
     fun Content(plantId: String, onBack: () -> Unit) {
         val context = LocalContext.current
-        val backgroundColor = colorResource(id = com.example.myapplication.R.color.soft_green)
+        val backgroundColor = colorResource(id = R.color.soft_green)
+        val darkGreen = colorResource(id = R.color.dark_green)
 
         println("DetailScreen: plantId diterima = $plantId")
 
@@ -47,7 +48,7 @@ class DetailScreen {
                     title = { Text("Postingan", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = { onBack() }) {
-                            Icon(painterResource(R.drawable.baseline_arrow_back_24), contentDescription = "Back")
+                            Icon(painterResource(R.drawable.baseline_arrow_back_24), contentDescription = "Back", tint = darkGreen )
                         }
                     },
                     actions = {
@@ -92,20 +93,20 @@ class DetailScreen {
 
                 // Detail Tanaman
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Nama Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("Nama Tanaman", fontSize = 15.sp)
+                    Text("Nama Tanaman:", fontSize = 16.sp, color = Color.Black, fontWeight = FontWeight.Bold)
+                    Text("Nama Tanaman", color = Color.Black, fontSize = 15.sp)
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Kandungan Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("Kandungan Tanaman", fontSize = 15.sp)
+                    Text("Kandungan Tanaman:", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Kandungan Tanaman", color = Color.Black, fontSize = 15.sp)
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Manfaat Tanaman:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("Manfaat Tanaman", fontSize = 15.sp)
+                    Text("Manfaat Tanaman:", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Manfaat Tanaman", color = Color.Black, fontSize = 15.sp)
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Cara Pengolahan:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                    Text("Cara pengolahan tanaman", fontSize = 15.sp)
+                    Text("Cara Pengolahan:", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Cara pengolahan tanaman", color = Color.Black, fontSize = 15.sp)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -118,7 +119,7 @@ class DetailScreen {
                         .clip(RoundedCornerShape(8.dp))
                 ) {
                     Image(
-                        painter = painterResource(com.example.myapplication.R.drawable.jahe),
+                        painter = painterResource(R.drawable.jahe),
                         contentDescription = "Plant Image",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -129,10 +130,10 @@ class DetailScreen {
 
                 // Rating
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    Text("Average Rating: 0.0", fontWeight = FontWeight.Bold)
+                    Text("Average Rating: 0.0", color = Color.Black, fontWeight = FontWeight.Bold)
 
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Beri Rating:", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Beri Rating:", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.Bold)
 
                     Row {
                         for (i in 1..5) {
@@ -160,10 +161,10 @@ class DetailScreen {
                         elevation = CardDefaults.cardElevation(2.dp)
                     ) {
                         Column(modifier = Modifier.padding(8.dp)) {
-                            Text("Nama Pengguna", fontWeight = FontWeight.Bold)
+                            Text("Nama Pengguna", color = Color.Black, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(4.dp))
 
-                            Text("Komentar Pengguna", fontSize = 15.sp)
+                            Text("Komentar Pengguna", color = Color.Black, fontSize = 15.sp)
                             Spacer(modifier = Modifier.height(4.dp))
 
                             Text("Waktu Komentar", fontSize = 12.sp, color = Color.Gray)
@@ -182,7 +183,7 @@ class DetailScreen {
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = colorResource(id = com.example.myapplication.R.color.soft_green),
+            color = colorResource(id =R.color.soft_green),
             tonalElevation = 0.dp
         ) {
             Row(
@@ -198,9 +199,9 @@ class DetailScreen {
                     },
                     placeholder = { Text("Tambahkan Komentar Anda...", color = Color.Gray) },
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = colorResource(id = com.example.myapplication.R.color.soft_green),
-                        unfocusedContainerColor = colorResource(id = com.example.myapplication.R.color.soft_green),
-                        disabledContainerColor = colorResource(id = com.example.myapplication.R.color.soft_green)
+                        focusedContainerColor = colorResource(id = R.color.soft_green),
+                        unfocusedContainerColor = colorResource(id = R.color.soft_green),
+                        disabledContainerColor = colorResource(id = R.color.soft_green)
                     ),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { onSendComment() }),

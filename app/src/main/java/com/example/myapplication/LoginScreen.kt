@@ -103,10 +103,10 @@ fun LoginScreen(
                             password = it
                             passwordError = null
                         },
-                        label = { Text("Kata Sandi") },
+                        label = { Text("Kata Sandi", color = Color.Black) },
                         placeholder = { Text("Masukkan Kata Sandi") },
                         visualTransformation = PasswordVisualTransformation(),
-                        textStyle = TextStyle(fontSize = 16.sp),
+                        textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp),

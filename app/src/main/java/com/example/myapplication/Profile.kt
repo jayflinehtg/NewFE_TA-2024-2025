@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.EventSink
 import com.example.myapplication.data.PreferencesHelper
 
 @Composable
@@ -73,7 +74,8 @@ fun Profile(navController: NavController) {
 
         // Tombol Keluar
         Button(
-            onClick = { viewModel.logout() },
+            onClick = {
+                viewModel.logoutAndDisconnect() },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
             shape = RoundedCornerShape(50),
             modifier = Modifier.fillMaxWidth(0.6f)
@@ -86,7 +88,7 @@ fun Profile(navController: NavController) {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = message,
-                color = if (message.contains("berhasil", ignoreCase = true)) Color.Green else Color.Red,
+                color = if (message.contains("Berhasil", ignoreCase = true)) Color.Green else Color.Red,
                 fontSize = 14.sp
             )
         }
