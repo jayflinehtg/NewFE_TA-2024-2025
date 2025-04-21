@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.net.Uri
 import android.widget.Toast
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -25,8 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
-import com.example.myapplication.R
-import com.example.myapplication.data.DataClassResponses
+import com.example.myapplication.data.DataClassResponses.AddPlantRequest
 import com.example.myapplication.data.IPFSResponse
 import com.example.myapplication.data.PreferencesHelper
 import com.example.myapplication.services.IPFSService
@@ -38,6 +38,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun AddPlant(
@@ -53,7 +54,8 @@ fun AddPlant(
     var gambarUri by remember { mutableStateOf<Uri?>(null) }
     var showError by remember { mutableStateOf(false) }
     var isUploading by remember { mutableStateOf(false) }
-    var cid by remember { mutableStateOf("") }
+    // Ambil CID dari ViewModel
+    val cid = viewModel.cid.value
 
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -147,34 +149,98 @@ fun AddPlant(
                             return@Button
                         }
 
+                        // Cek URI gambar sebelum upload
+                        Log.d("AddIPFS", "Selected image URI: ${gambarUri?.path}")
+
                         showError = false
                         isUploading = true
 
                         val jwtTokenRaw = PreferencesHelper.getJwtToken(context)
                         val jwtToken = "Bearer ${jwtTokenRaw ?: ""}"
 
-                        val file = File(gambarUri?.path ?: "")
-                        val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
-                        val filePart = MultipartBody.Part.createFormData("file", file.name, requestBody)
+                        // Tambahkan log untuk melihat JWT Token
+                        Log.d("AddIPFS", "JWT Token: $jwtToken")
 
-                        ipfsService.uploadImage(jwtToken, filePart).enqueue(object : Callback<IPFSResponse> {
-                            override fun onResponse(call: Call<IPFSResponse>, response: Response<IPFSResponse>) {
-                                isUploading = false
-                                if (response.isSuccessful) {
-                                    response.body()?.let { ipfsResponse ->
-                                        cid = ipfsResponse.cid
-                                        Toast.makeText(context, "CID: $cid", Toast.LENGTH_SHORT).show()
-                                    }
-                                } else {
-                                    Toast.makeText(context, "Gagal upload ke IPFS", Toast.LENGTH_SHORT).show()
+                        val maxSizeInBytes = 5 * 1024 * 1024 // 5 MB dalam byte
+                        val tempFile = gambarUri?.let { uri ->
+                            try {
+                                val contentResolver = context.contentResolver
+                                val mimeType = contentResolver.getType(uri)
+
+                                // Validasi MIME type, hanya gambar yang diperbolehkan
+                                if (mimeType?.startsWith("image/") != true) {
+                                    Toast.makeText(context, "Tipe file tidak valid, hanya gambar yang diperbolehkan", Toast.LENGTH_SHORT).show()
+                                    return@let null // Kembalikan null jika file bukan gambar
                                 }
-                            }
 
-                            override fun onFailure(call: Call<IPFSResponse>, t: Throwable) {
-                                isUploading = false
-                                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                                val inputStream = contentResolver.openInputStream(uri)
+                                val fileName = "uploaded_image_${System.currentTimeMillis()}.jpg"
+                                val tempFile = File(context.cacheDir, fileName)
+
+                                inputStream?.use { input ->
+                                    FileOutputStream(tempFile).use { output ->
+                                        input.copyTo(output)
+                                    }
+                                }
+
+                                // Mengecek ukuran file
+                                if (tempFile.length() > maxSizeInBytes) {
+                                    Log.e("AddIPFS", "File terlalu besar, maksimal 5MB")
+                                    Toast.makeText(context, "File terlalu besar, maksimal 5MB", Toast.LENGTH_SHORT).show()
+                                    return@let null // Kembalikan null jika file terlalu besar
+                                } else {
+                                    Log.d("AddIPFS", "File berhasil dibuat: ${tempFile.absolutePath}")
+                                }
+
+                                // Cek apakah file berhasil dibuat
+                                if (tempFile.exists()) {
+                                    Log.d("AddIPFS", "File berhasil dibuat di: ${tempFile.absolutePath}")
+                                } else {
+                                    Log.e("AddIPFS", "File tidak ada setelah disalin")
+                                }
+
+                                tempFile
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                Log.e("AddIPFS", "Error saat membuat file: ${e.message}")
+                                null
                             }
-                        })
+                        }
+
+                        // Pastikan file tidak null sebelum upload
+                        tempFile?.let { file ->
+                            val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+                            val filePart = MultipartBody.Part.createFormData("file", file.name, requestBody)
+
+                            ipfsService.uploadImage(jwtToken, filePart).enqueue(object : Callback<IPFSResponse> {
+                                override fun onResponse(call: Call<IPFSResponse>, response: Response<IPFSResponse>) {
+                                    Log.d("AddIPFS", "Response received: ${response.code()} ${response.body()}")
+                                    if (!response.isSuccessful) {
+                                        Log.e("AddIPFS", "Error: ${response.errorBody()?.string()}")
+                                    }
+                                    isUploading = false
+                                    if (response.isSuccessful) {
+                                        response.body()?.let { ipfsResponse ->
+                                            val newCid = ipfsResponse.cid
+                                            viewModel.setCid(newCid)  // Menyimpan CID ke ViewModel
+                                            Toast.makeText(context, "CID: $newCid", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } else {
+                                        Toast.makeText(context, "Gagal upload ke IPFS", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+
+                                override fun onFailure(call: Call<IPFSResponse>, t: Throwable) {
+                                    isUploading = false
+                                    Log.e("AddIPFS", "Upload failed: ${t.message}")
+                                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            })
+                        } ?: run {
+                            // Menangani kasus ketika file tidak berhasil dibuat
+                            Toast.makeText(context, "Gagal membuat file dari URI", Toast.LENGTH_SHORT).show()
+                            isUploading = false
+                        }
                     },
                     enabled = !isUploading,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
@@ -210,19 +276,19 @@ fun AddPlant(
                                 if (it.startsWith("Bearer ")) it else "Bearer $it"
                             } ?: ""
 
-                            val request = DataClassResponses.AddPlantRequest(
+                            val request = AddPlantRequest(
                                 name = namaTanaman,
                                 namaLatin = namaLatin,
                                 komposisi = komposisi,
                                 kegunaan = manfaat,
                                 caraPengolahan = caraPengolahan,
-                                ipfsHash = cid
+                                ipfsHash = cid // Menggunakan CID yang telah disimpan di ViewModel
                             )
 
                             viewModel.addPlant(
                                 token = jwtToken,
                                 request = request,
-                                onSuccess = {
+                                onSuccess = { response ->
                                     Toast.makeText(context, "Tanaman berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
                                 },
                                 onError = { errorMessage ->
@@ -237,10 +303,9 @@ fun AddPlant(
                         .height(50.dp),
                     shape = RoundedCornerShape(50)
                 ) {
-                    Text("Simpan", fontSize = 16.sp, color = Color.White)
+                    Text("Simpan", color = Color.White)
                 }
             }
-
         }
     }
 }
@@ -259,7 +324,7 @@ fun FormField(label: String, value: String, isError: Boolean, onChange: (String)
             onValueChange = onChange,
             singleLine = false,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
-            textStyle = TextStyle(color = Color.Black, fontSize = 14.sp), // Warna teks hitam
+            textStyle = TextStyle(color = Color.Black, fontSize = 14.sp),
             isError = isError,
             modifier = Modifier
                 .fillMaxWidth()

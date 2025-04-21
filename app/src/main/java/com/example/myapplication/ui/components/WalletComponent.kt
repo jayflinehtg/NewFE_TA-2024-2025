@@ -48,7 +48,8 @@ fun WalletComponent(
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF2E7D32),
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        textAlign = TextAlign.Center
                     )
 
                     Text(

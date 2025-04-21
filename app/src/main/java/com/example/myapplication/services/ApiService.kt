@@ -31,7 +31,7 @@ interface ApiService {
     /* ================================ Tanaman ================================ */
     @POST("plants/add")
     fun addPlant(
-        @Header("Authorization") token: String, // Format: "Bearer <token>"
+        @Header("Authorization") token: String,
         @Body request: AddPlantRequest
     ): Call<AddPlantResponse>
 

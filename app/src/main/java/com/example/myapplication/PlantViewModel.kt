@@ -1,6 +1,8 @@
 package com.example.myapplication
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.DataClassResponses.AddPlantRequest
@@ -16,6 +18,16 @@ class PlantViewModel @Inject constructor(
     private val apiService: ApiService
 ) : ViewModel() {
 
+    // Menyimpan CID hasil upload
+    private val _cid = mutableStateOf("")
+    val cid: State<String> = _cid // Memastikan akses State yang benar
+
+    // Fungsi untuk menyetel CID
+    fun setCid(newCid: String) {
+        _cid.value = newCid
+    }
+
+    // Fungsi untuk menambahkan tanaman
     fun addPlant(
         token: String,
         request: AddPlantRequest,
@@ -24,7 +36,6 @@ class PlantViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                // Panggil API secara sinkron di background thread
                 val response = apiService.addPlant(token, request).execute()
                 if (response.isSuccessful) {
                     response.body()?.let {
