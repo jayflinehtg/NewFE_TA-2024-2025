@@ -29,7 +29,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.data.DataClassResponses.AddPlantRequest
 import com.example.myapplication.data.IPFSResponse
 import com.example.myapplication.data.PreferencesHelper
-import com.example.myapplication.services.IPFSService
+import com.example.myapplication.services.ApiService
 import com.example.myapplication.services.RetrofitClient
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -43,7 +43,7 @@ import java.io.FileOutputStream
 @Composable
 fun AddPlant(
     viewModel: PlantViewModel = hiltViewModel(),
-    ipfsService: IPFSService = RetrofitClient.ipfsService
+    apiService: ApiService = RetrofitClient.apiService
 ) {
     val context = LocalContext.current
     var namaTanaman by remember { mutableStateOf("") }
@@ -212,7 +212,7 @@ fun AddPlant(
                             val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
                             val filePart = MultipartBody.Part.createFormData("file", file.name, requestBody)
 
-                            ipfsService.uploadImage(jwtToken, filePart).enqueue(object : Callback<IPFSResponse> {
+                            apiService.uploadImage(jwtToken, filePart).enqueue(object : Callback<IPFSResponse> {
                                 override fun onResponse(call: Call<IPFSResponse>, response: Response<IPFSResponse>) {
                                     Log.d("AddIPFS", "Response received: ${response.code()} ${response.body()}")
                                     if (!response.isSuccessful) {
@@ -228,6 +228,7 @@ fun AddPlant(
                                     } else {
                                         Toast.makeText(context, "Gagal upload ke IPFS", Toast.LENGTH_SHORT).show()
                                     }
+                                    file.delete()
                                 }
 
                                 override fun onFailure(call: Call<IPFSResponse>, t: Throwable) {

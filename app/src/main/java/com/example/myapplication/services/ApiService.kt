@@ -35,4 +35,11 @@ interface ApiService {
         @Body request: AddPlantRequest
     ): Call<AddPlantResponse>
 
+    /* ================================ IPFS ================================ */
+    @Multipart
+    @POST("ipfs/upload")
+    fun uploadImage(
+        @Header("Authorization") token: String,
+        @Part file: MultipartBody.Part
+    ): Call<IPFSResponse>
 }
