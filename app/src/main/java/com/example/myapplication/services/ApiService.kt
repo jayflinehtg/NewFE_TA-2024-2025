@@ -30,10 +30,11 @@ interface ApiService {
 
     /* ================================ Tanaman ================================ */
     @POST("plants/add")
-    fun addPlant(
+    suspend fun addPlant(
         @Header("Authorization") token: String,
         @Body request: AddPlantRequest
-    ): Call<AddPlantResponse>
+    ): AddPlantResponse
+
 
     /* ================================ IPFS ================================ */
     @Multipart

@@ -36,21 +36,18 @@ class PlantViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val response = apiService.addPlant(token, request).execute()
-                if (response.isSuccessful) {
-                    response.body()?.let {
-                        Log.d("Add Plant", "Tanaman berhasil ditambahkan: ${it.message}")
-                        onSuccess(it)
-                    } ?: onError("Response body kosong")
-                } else {
-                    Log.e("Add Plant", "Gagal menambahkan tanaman: ${response.message()}")
-                    onError("Gagal menambahkan tanaman, coba lagi.")
-                }
+                Log.d("AddPlant", "Sending request to backend with: $request")
+                Log.d("AddPlant", "Authorization Token: $token")
+
+                val response = apiService.addPlant(token, request)
+                Log.d("AddPlant", "Success! Response: ${response.message}")
+                onSuccess(response)
+
             } catch (e: IOException) {
-                Log.e("Add Plant", "Error menambahkan tanaman: $e")
+                Log.e("AddPlant", "IOException: ${e.message}", e)
                 onError("Terjadi kesalahan jaringan: ${e.message}")
             } catch (e: Exception) {
-                Log.e("Add Plant", "Error tidak terduga: $e")
+                Log.e("AddPlant", "Exception: ${e.message}", e)
                 onError("Terjadi kesalahan: ${e.message}")
             }
         }
