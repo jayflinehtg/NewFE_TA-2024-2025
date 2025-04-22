@@ -8,6 +8,9 @@ import com.example.myapplication.data.DataClassResponses.RegisterResponse
 import com.example.myapplication.data.DataClassResponses.UserInfoResponse
 import com.example.myapplication.data.IPFSResponse
 import com.example.myapplication.data.LoginRequest
+import com.example.myapplication.data.PaginatedPlantResponse
+import com.example.myapplication.data.PlantListResponse
+import com.example.myapplication.data.PlantResponse
 import com.example.myapplication.data.User
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -35,6 +38,11 @@ interface ApiService {
         @Body request: AddPlantRequest
     ): AddPlantResponse
 
+    @GET("plants/all")
+    suspend fun getPaginatedPlants(
+        @Query("page") page: Int,
+        @Query("limit") limit: Int = 10
+    ): PaginatedPlantResponse
 
     /* ================================ IPFS ================================ */
     @Multipart

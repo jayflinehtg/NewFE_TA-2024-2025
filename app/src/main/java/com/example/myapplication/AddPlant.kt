@@ -71,7 +71,7 @@ fun AddPlant(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painter = painterResource(id = R.drawable.plant),
-                contentDescription = "Plant Logo",
+                contentDescription = "PlantResponse Logo",
                 modifier = Modifier.size(60.dp)
             )
             Spacer(modifier = Modifier.width(12.dp))

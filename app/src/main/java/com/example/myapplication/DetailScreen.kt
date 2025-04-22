@@ -120,7 +120,7 @@ class DetailScreen {
                 ) {
                     Image(
                         painter = painterResource(R.drawable.jahe),
-                        contentDescription = "Plant Image",
+                        contentDescription = "PlantResponse Image",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )

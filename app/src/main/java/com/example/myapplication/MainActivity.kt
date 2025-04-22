@@ -119,7 +119,7 @@ class MainActivity : ComponentActivity() {
                         BottomNavBarScreen(navController)
                     }
 
-                    // Detail Screen (Dynamic Plant ID)
+                    // Detail Screen (Dynamic PlantResponse ID)
                     composable(
                         Screen.Detail.route,
                         arguments = listOf(navArgument("plantId") { type = NavType.StringType })
@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
                         if (plantId.isNotEmpty()) {
                             DetailScreen().Content(plantId = plantId) { navController.popBackStack() }
                         } else {
-                            Text("Plant ID tidak valid.")
+                            Text("PlantResponse ID tidak valid.")
                         }
                     }
                 }

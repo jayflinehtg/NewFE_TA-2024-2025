@@ -6,7 +6,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    private const val BASE_URL = "http://192.168.1.100:5000/api/"  // Semua route, termasuk IPFS
+    private const val BASE_URL = "http://192.168.1.103:5000/api/"  // Semua route, termasuk IPFS
 
     private val retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)

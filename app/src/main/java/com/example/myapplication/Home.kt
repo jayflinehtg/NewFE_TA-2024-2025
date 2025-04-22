@@ -18,27 +18,46 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.data.PlantResponse
+import com.example.myapplication.PlantViewModel
 import com.example.myapplication.R
 
 @Composable
-fun Home(navController: NavController) {
+fun Home(
+    navController: NavController,
+    viewModel: PlantViewModel = hiltViewModel()
+) {
+    // States from ViewModel
+    val plantList by viewModel.plantList
+    val currentPage by viewModel.currentPage
+    val totalPlants by viewModel.totalPlants
+    val pageSize = 10
+    val totalPages = if (totalPlants == 0) 1 else (totalPlants + pageSize - 1) / pageSize
+
     var searchQuery by remember { mutableStateOf("") }
+    val filteredPlants = remember(plantList, searchQuery) {
+        if (searchQuery.isBlank()) plantList
+        else plantList.filter { it.name.contains(searchQuery, ignoreCase = true) }
+    }
 
-    // Sample data
-    val samplePlants = listOf(
-        Plant("1", "Jahe", 4.5),
-        Plant("2", "Kunyit", 4.2),
-        Plant("3", "Temulawak", 4.0)
-    )
+    // Text state for manual page input
+    var pageInput by remember { mutableStateOf(currentPage.toString()) }
+    val focusManager = LocalFocusManager.current
 
-    var filteredPlants by remember { mutableStateOf(samplePlants) }
+    // Fetch first page on entry
+    LaunchedEffect(Unit) {
+        viewModel.fetchPlantsByPage(1)
+    }
 
     Column(
         modifier = Modifier
@@ -46,7 +65,7 @@ fun Home(navController: NavController) {
             .background(Color(0xFFEAF4E9))
             .padding(16.dp)
     ) {
-        // HEADER WITH LOGO
+        // Header
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -58,7 +77,6 @@ fun Home(navController: NavController) {
                     .size(70.dp)
                     .padding(end = 8.dp)
             )
-
             Column {
                 Text(
                     text = "Jelajahi Informasi",
@@ -75,15 +93,52 @@ fun Home(navController: NavController) {
             }
         }
 
-        // SEARCH BAR
+        // Pagination Controls with manual input
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+        ) {
+            OutlinedTextField(
+                value = pageInput,
+                onValueChange = { pageInput = it },
+                label = { Text("Page") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = {
+                    focusManager.clearFocus()
+                    val page = pageInput.toIntOrNull() ?: 1
+                    val validPage = page.coerceIn(1, totalPages)
+                    pageInput = validPage.toString()
+                    viewModel.fetchPlantsByPage(validPage)
+                }),
+                modifier = Modifier.width(100.dp)
+            )
+            Text(
+                text = "of $totalPages",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                onClick = {
+                    val page = pageInput.toIntOrNull() ?: 1
+                    viewModel.fetchPlantsByPage(page.coerceIn(1, totalPages))
+                }
+            ) {
+                Text("Go")
+            }
+        }
+
+        // Search Bar
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = {
-                searchQuery = it
-                filteredPlants = samplePlants.filter { plant ->
-                    plant.name.contains(it, ignoreCase = true)
-                }
-            },
+            onValueChange = { searchQuery = it },
             placeholder = { Text("Cari Nama Tanaman...") },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
@@ -93,12 +148,12 @@ fun Home(navController: NavController) {
                 focusedContainerColor = Color.White
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = {})
+            keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // PLANT LIST
+        // Plant List
         LazyColumn {
             items(filteredPlants) { plant ->
                 PlantCard(plant, navController)
@@ -108,7 +163,7 @@ fun Home(navController: NavController) {
 }
 
 @Composable
-fun PlantCard(plant: Plant, navController: NavController) {
+fun PlantCard(plant: PlantResponse, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,9 +186,7 @@ fun PlantCard(plant: Plant, navController: NavController) {
                 tint = Color(0xFF498553),
                 modifier = Modifier.size(40.dp)
             )
-
             Spacer(modifier = Modifier.width(16.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = plant.name,
@@ -141,11 +194,13 @@ fun PlantCard(plant: Plant, navController: NavController) {
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
-                StarRating(rating = plant.rating)
+                val rating = plant.ratingCount.toIntOrNull()?.let { count ->
+                    val total = plant.ratingTotal.toDoubleOrNull() ?: 0.0
+                    if (count > 0) total / count else 0.0
+                } ?: 0.0
+                StarRating(rating = rating)
             }
-
             TextButton(onClick = {
-                println("Navigasi ke detail dengan plantId: ${plant.id}")
                 navController.navigate("detail/${plant.id}")
             }) {
                 Text("Detail", color = colorResource(id = R.color.dark_green))
@@ -167,9 +222,3 @@ fun StarRating(rating: Double) {
         }
     }
 }
-
-data class Plant(
-    val id: String,
-    val name: String,
-    val rating: Double
-)

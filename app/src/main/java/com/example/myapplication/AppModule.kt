@@ -37,7 +37,7 @@ internal object AppModule {
                 sdkOptions = SDKOptions(
                     infuraAPIKey = BuildConfig.MY_INFURA_KEY,
                     readonlyRPCMap = mapOf(
-                        "Ganache" to "http://192.168.1.100:7545"
+                        "Ganache" to "http://192.168.1.103:7545"
                     )
                 )
             )
@@ -48,7 +48,7 @@ internal object AppModule {
     @Singleton
     fun provideRetrofit(): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.1.100:5000/api/")
+            .baseUrl("http://192.168.1.103:5000/api/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }

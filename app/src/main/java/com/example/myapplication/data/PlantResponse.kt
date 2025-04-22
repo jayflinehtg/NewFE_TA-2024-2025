@@ -2,8 +2,16 @@ package com.example.myapplication.data
 
 import com.google.gson.annotations.SerializedName
 
-data class Plant(
-    @SerializedName("id")
+data class PlantListResponse(
+    @SerializedName("success")
+    val success: Boolean,
+
+    @SerializedName("plants")
+    val plants: List<PlantResponse>
+)
+
+data class PlantResponse(
+    @SerializedName("plantId")
     val id: String = "",
 
     @SerializedName("name")

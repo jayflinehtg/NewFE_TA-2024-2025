@@ -7,6 +7,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.DataClassResponses.AddPlantRequest
 import com.example.myapplication.data.DataClassResponses.AddPlantResponse
+import com.example.myapplication.data.PlantResponse
+import com.example.myapplication.data.PaginatedPlantResponse
 import com.example.myapplication.services.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -18,16 +20,15 @@ class PlantViewModel @Inject constructor(
     private val apiService: ApiService
 ) : ViewModel() {
 
-    // Menyimpan CID hasil upload
+    // ==================== CID ====================
     private val _cid = mutableStateOf("")
-    val cid: State<String> = _cid // Memastikan akses State yang benar
+    val cid: State<String> = _cid
 
-    // Fungsi untuk menyetel CID
     fun setCid(newCid: String) {
         _cid.value = newCid
     }
 
-    // Fungsi untuk menambahkan tanaman
+    // ==================== Tambah Tanaman ====================
     fun addPlant(
         token: String,
         request: AddPlantRequest,
@@ -49,6 +50,37 @@ class PlantViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("AddPlant", "Exception: ${e.message}", e)
                 onError("Terjadi kesalahan: ${e.message}")
+            }
+        }
+    }
+
+    // ==================== Pagination Tanaman ====================
+    private val _plantList = mutableStateOf<List<PlantResponse>>(emptyList())
+    val plantList: State<List<PlantResponse>> = _plantList
+
+    private val _totalPlants = mutableStateOf(0)
+    val totalPlants: State<Int> = _totalPlants
+
+    private val _currentPage = mutableStateOf(1)
+    val currentPage: State<Int> = _currentPage
+
+    private val pageSize = 10
+
+    fun fetchPlantsByPage(page: Int = 1) {
+        viewModelScope.launch {
+            try {
+                Log.d("Pagination", "Fetching page $page")
+                val response: PaginatedPlantResponse = apiService.getPaginatedPlants(page, pageSize)
+                if (response.success) {
+                    _plantList.value = response.plants
+                    _totalPlants.value = response.total.toInt()
+                    _currentPage.value = response.currentPage
+                    Log.d("Pagination", "Fetched ${response.plants.size} plants on page $page")
+                } else {
+                    Log.e("Pagination", "Failed to fetch plants: success=false")
+                }
+            } catch (e: Exception) {
+                Log.e("Pagination", "Error fetching plants: ${e.message}")
             }
         }
     }
