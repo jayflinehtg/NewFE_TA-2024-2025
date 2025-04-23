@@ -124,9 +124,10 @@ fun Home(
                 onClick = {
                     val page = pageInput.toIntOrNull() ?: 1
                     viewModel.fetchPlantsByPage(page.coerceIn(1, totalPages))
-                }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
             ) {
-                Text("Go")
+                Text("Go", color = Color.White, fontSize = 14.sp)
             }
         }
 
@@ -224,7 +225,7 @@ fun PlantCard(plant: PlantResponse, averageRating: Double, navController: NavCon
             Spacer(modifier = Modifier.width(8.dp))
             Button(
                 onClick = { navController.navigate("detail/${plant.id}") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
                 shape = RoundedCornerShape(50),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {

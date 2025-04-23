@@ -115,7 +115,7 @@ fun AddPlant(
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Pilih Gambar", color = Color.Black) // Warna teks pada button
+                    Text("Pilih Gambar", color = Color.White) // Warna teks pada button
                 }
 
                 // Menampilkan preview gambar jika ada
