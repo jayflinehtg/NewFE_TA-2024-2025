@@ -59,7 +59,7 @@ fun BottomNavBarScreen(rootNavController: NavHostController) {
                 Home(navController = rootNavController) // Kirim root nav jika Home butuh
             }
             composable("addplant") {
-                AddPlant()
+                AddPlant(navController = bottomNavController)
             }
             composable("profile") {
                 Profile(navController = rootNavController)

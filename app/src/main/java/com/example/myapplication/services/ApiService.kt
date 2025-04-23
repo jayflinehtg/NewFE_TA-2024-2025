@@ -1,7 +1,9 @@
 package com.example.myapplication.services
 
+import com.example.myapplication.data.DataClassResponses
 import com.example.myapplication.data.DataClassResponses.AddPlantRequest
 import com.example.myapplication.data.DataClassResponses.AddPlantResponse
+import com.example.myapplication.data.DataClassResponses.AverageRatingResponse
 import com.example.myapplication.data.DataClassResponses.LoginResponse
 import com.example.myapplication.data.DataClassResponses.LogoutResponse
 import com.example.myapplication.data.DataClassResponses.RegisterResponse
@@ -43,6 +45,19 @@ interface ApiService {
         @Query("page") page: Int,
         @Query("limit") limit: Int = 10
     ): PaginatedPlantResponse
+
+    @GET("plants/search")
+    suspend fun searchPlants(
+        @Query("name") name: String = "",
+        @Query("namaLatin") namaLatin: String = "",
+        @Query("komposisi") komposisi: String = "",
+        @Query("kegunaan") kegunaan: String = ""
+    ): PlantListResponse
+
+    @GET("plants/plant/averageRating/{plantId}")
+    suspend fun getAverageRating(
+        @Path("plantId") plantId: String
+    ): AverageRatingResponse
 
     /* ================================ IPFS ================================ */
     @Multipart

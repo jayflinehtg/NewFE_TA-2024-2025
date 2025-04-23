@@ -79,7 +79,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Silakan Bergabung!",
+                text = "Silahkan Masuk!",
                 fontSize = 14.sp,
                 color = colorResource(id = R.color.black)
             )

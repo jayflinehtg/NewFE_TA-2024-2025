@@ -21,40 +21,33 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.PlantResponse
-import com.example.myapplication.PlantViewModel
-import com.example.myapplication.R
+import kotlin.math.roundToInt
 
 @Composable
 fun Home(
     navController: NavController,
     viewModel: PlantViewModel = hiltViewModel()
 ) {
-    // States from ViewModel
-    val plantList by viewModel.plantList
+    val ratedPlantList by viewModel.ratedPlantList
     val currentPage by viewModel.currentPage
     val totalPlants by viewModel.totalPlants
     val pageSize = 10
     val totalPages = if (totalPlants == 0) 1 else (totalPlants + pageSize - 1) / pageSize
 
     var searchQuery by remember { mutableStateOf("") }
-    val filteredPlants = remember(plantList, searchQuery) {
-        if (searchQuery.isBlank()) plantList
-        else plantList.filter { it.name.contains(searchQuery, ignoreCase = true) }
-    }
-
-    // Text state for manual page input
     var pageInput by remember { mutableStateOf(currentPage.toString()) }
     val focusManager = LocalFocusManager.current
 
-    // Fetch first page on entry
     LaunchedEffect(Unit) {
         viewModel.fetchPlantsByPage(1)
     }
@@ -93,7 +86,7 @@ fun Home(
             }
         }
 
-        // Pagination Controls with manual input
+        // Pagination
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -104,8 +97,9 @@ fun Home(
             OutlinedTextField(
                 value = pageInput,
                 onValueChange = { pageInput = it },
-                label = { Text("Page") },
+                label = { Text("Page", color = Color.Black) },
                 singleLine = true,
+                textStyle = TextStyle(color = Color.Black),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
@@ -122,7 +116,8 @@ fun Home(
             Text(
                 text = "of $totalPages",
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(start = 4.dp)
+                modifier = Modifier.padding(start = 4.dp),
+                color = Color.Black
             )
             Spacer(modifier = Modifier.weight(1f))
             Button(
@@ -139,71 +134,101 @@ fun Home(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Cari Nama Tanaman...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            placeholder = { Text("Cari tanaman...", color = Color.Gray) },
+            textStyle = TextStyle(color = Color.Black),
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
+                focusedContainerColor = Color.White,
+                unfocusedIndicatorColor = Color.Black,
+                focusedIndicatorColor = Color.Black,
+                cursorColor = Color.Black,
+                unfocusedPlaceholderColor = Color.Gray,
+                focusedPlaceholderColor = Color.Gray,
             ),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() })
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    focusManager.clearFocus()
+                    if (searchQuery.isBlank()) {
+                        viewModel.fetchPlantsByPage(1)
+                    } else {
+                        viewModel.searchPlants(
+                            name = searchQuery,
+                            namaLatin = searchQuery,
+                            komposisi = searchQuery,
+                            kegunaan = searchQuery
+                        )
+                    }
+                }
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Plant List
-        LazyColumn {
-            items(filteredPlants) { plant ->
-                PlantCard(plant, navController)
+        if (ratedPlantList.isEmpty()) {
+            Text(
+                "Tidak ditemukan tanaman sesuai pencarian.",
+                color = Color.Gray,
+                modifier = Modifier
+                    .padding(top = 32.dp)
+                    .align(Alignment.CenterHorizontally),
+                textAlign = TextAlign.Center
+            )
+        } else {
+            LazyColumn {
+                items(ratedPlantList) { ratedPlant ->
+                    PlantCard(ratedPlant.plant, ratedPlant.averageRating, navController)
+                }
             }
         }
     }
 }
 
 @Composable
-fun PlantCard(plant: PlantResponse, navController: NavController) {
+fun PlantCard(plant: PlantResponse, averageRating: Double, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .shadow(4.dp, RoundedCornerShape(12.dp))
-            .height(90.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp)
+            .padding(vertical = 6.dp)
+            .shadow(8.dp, RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFFFF)),
+        shape = RoundedCornerShape(16.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 imageVector = Icons.Rounded.Park,
                 contentDescription = "Plant Icon",
-                tint = Color(0xFF498553),
-                modifier = Modifier.size(40.dp)
+                tint = Color(0xFF66BB6A),
+                modifier = Modifier
+                    .size(50.dp)
+                    .padding(end = 12.dp)
             )
-            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = plant.name,
-                    color = colorResource(id = R.color.dark_green),
+                    color = Color(0xFF2E7D32),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
-                val rating = plant.ratingCount.toIntOrNull()?.let { count ->
-                    val total = plant.ratingTotal.toDoubleOrNull() ?: 0.0
-                    if (count > 0) total / count else 0.0
-                } ?: 0.0
-                StarRating(rating = rating)
+                Spacer(modifier = Modifier.height(4.dp))
+                StarRating(rating = averageRating)
             }
-            TextButton(onClick = {
-                navController.navigate("detail/${plant.id}")
-            }) {
-                Text("Detail", color = colorResource(id = R.color.dark_green))
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(
+                onClick = { navController.navigate("detail/${plant.id}") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
+                shape = RoundedCornerShape(50),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text("Detail", color = Color.White, fontSize = 14.sp)
             }
         }
     }
@@ -211,14 +236,20 @@ fun PlantCard(plant: PlantResponse, navController: NavController) {
 
 @Composable
 fun StarRating(rating: Double) {
-    Row {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         repeat(5) { index ->
             Icon(
                 imageVector = Icons.Default.Star,
-                contentDescription = null,
-                tint = if (index < rating.toInt()) Color(0xFFFFD700) else Color.LightGray,
+                contentDescription = "Star Rating",
+                tint = if (index < rating.roundToInt()) Color(0xFFFFD700) else Color(0xFFE0E0E0),
                 modifier = Modifier.size(20.dp)
             )
         }
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "(${rating.toString().take(3)})",
+            fontSize = 12.sp,
+            color = Color.DarkGray
+        )
     }
 }

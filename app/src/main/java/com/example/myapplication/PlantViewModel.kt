@@ -7,10 +7,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.DataClassResponses.AddPlantRequest
 import com.example.myapplication.data.DataClassResponses.AddPlantResponse
+import com.example.myapplication.data.DataClassResponses.RatedPlant
 import com.example.myapplication.data.PlantResponse
 import com.example.myapplication.data.PaginatedPlantResponse
 import com.example.myapplication.services.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
@@ -54,9 +57,38 @@ class PlantViewModel @Inject constructor(
         }
     }
 
+    // ==================== Search Tanaman ========================
+    fun searchPlants(
+        name: String = "",
+        namaLatin: String = "",
+        komposisi: String = "",
+        kegunaan: String = ""
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.searchPlants(name, namaLatin, komposisi, kegunaan)
+                val ratedResults = response.plants.map { plant ->
+                    val ratingResponse = try {
+                        apiService.getAverageRating(plant.id)
+                    } catch (e: Exception) {
+                        null
+                    }
+                    val avgRating = ratingResponse?.averageRating?.toDoubleOrNull() ?: 0.0
+                    RatedPlant(plant, avgRating)
+                }
+                _ratedPlantList.value = ratedResults
+                _totalPlants.value = ratedResults.size
+                _currentPage.value = 1
+                Log.d("SearchPlant", "Berhasil mencari ${ratedResults.size} tanaman.")
+            } catch (e: Exception) {
+                Log.e("SearchPlant", "Gagal mencari tanaman: ${e.message}")
+            }
+        }
+    }
+
     // ==================== Pagination Tanaman ====================
-    private val _plantList = mutableStateOf<List<PlantResponse>>(emptyList())
-    val plantList: State<List<PlantResponse>> = _plantList
+    private val _ratedPlantList = mutableStateOf<List<RatedPlant>>(emptyList())
+    val ratedPlantList: State<List<RatedPlant>> = _ratedPlantList
 
     private val _totalPlants = mutableStateOf(0)
     val totalPlants: State<Int> = _totalPlants
@@ -72,10 +104,20 @@ class PlantViewModel @Inject constructor(
                 Log.d("Pagination", "Fetching page $page")
                 val response: PaginatedPlantResponse = apiService.getPaginatedPlants(page, pageSize)
                 if (response.success) {
-                    _plantList.value = response.plants
+                    val ratedPlants = response.plants.map { plant ->
+                        val ratingResponse = try {
+                            apiService.getAverageRating(plant.id)
+                        } catch (e: Exception) {
+                            null
+                        }
+                        val avgRating = ratingResponse?.averageRating?.toDoubleOrNull() ?: 0.0
+                        RatedPlant(plant, avgRating)
+                    }
+
+                    _ratedPlantList.value = ratedPlants
                     _totalPlants.value = response.total.toInt()
                     _currentPage.value = response.currentPage
-                    Log.d("Pagination", "Fetched ${response.plants.size} plants on page $page")
+                    Log.d("Pagination", "Fetched ${ratedPlants.size} rated plants on page $page")
                 } else {
                     Log.e("Pagination", "Failed to fetch plants: success=false")
                 }

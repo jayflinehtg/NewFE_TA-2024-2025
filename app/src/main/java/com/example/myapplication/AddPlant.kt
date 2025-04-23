@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.myapplication.data.DataClassResponses.AddPlantRequest
 import com.example.myapplication.data.IPFSResponse
@@ -42,6 +43,7 @@ import java.io.FileOutputStream
 
 @Composable
 fun AddPlant(
+    navController: NavController,
     viewModel: PlantViewModel = hiltViewModel(),
     apiService: ApiService = RetrofitClient.apiService
 ) {
@@ -291,6 +293,9 @@ fun AddPlant(
                                 request = request,
                                 onSuccess = { response ->
                                     Toast.makeText(context, "Tanaman berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
+                                    navController.navigate("home"){
+                                        popUpTo("addplant") { inclusive = true }
+                                    }
                                 },
                                 onError = { errorMessage ->
                                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()

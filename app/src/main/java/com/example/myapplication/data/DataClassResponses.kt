@@ -52,4 +52,14 @@ class DataClassResponses {
         @SerializedName("txHash") val txHash: String,
         @SerializedName("plantId") val plantId: String
     )
+
+    data class AverageRatingResponse(
+        @SerializedName("success") val success: Boolean,
+        @SerializedName("averageRating") val averageRating: String
+    )
+
+    data class RatedPlant(
+        val plant: PlantResponse,
+        val averageRating: Double
+    )
 }
