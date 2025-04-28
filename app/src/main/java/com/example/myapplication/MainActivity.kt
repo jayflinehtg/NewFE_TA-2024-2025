@@ -124,9 +124,18 @@ class MainActivity : ComponentActivity() {
                         Screen.Detail.route,
                         arguments = listOf(navArgument("plantId") { type = NavType.StringType })
                     ) { backStackEntry ->
+
                         val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
+                        val plantViewModel: PlantViewModel = hiltViewModel()
+                        val token = viewModel.userToken // Tambahkan ini di MainViewModel-mu jika belum
+
                         if (plantId.isNotEmpty()) {
-                            DetailScreen().Content(plantId = plantId) { navController.popBackStack() }
+                            DetailScreen(
+                                plantId = plantId,
+                                token = token,
+                                viewModel = plantViewModel,
+                                onBack = { navController.popBackStack() }
+                            )
                         } else {
                             Text("PlantResponse ID tidak valid.")
                         }

@@ -39,6 +39,12 @@ class MainViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<UiEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
+    val userToken: String
+        get() {
+            val token = PreferencesHelper.getJwtToken(context)
+            return if (token != null && !token.startsWith("Bearer ")) "Bearer $token" else token ?: ""
+        }
+
     private val _uiState = MutableStateFlow(
         UiState(
             shouldShowWalletConnect = !PreferencesHelper.isMetaMaskConnected(context)

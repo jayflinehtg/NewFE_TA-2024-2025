@@ -4,9 +4,15 @@ import com.example.myapplication.data.DataClassResponses
 import com.example.myapplication.data.DataClassResponses.AddPlantRequest
 import com.example.myapplication.data.DataClassResponses.AddPlantResponse
 import com.example.myapplication.data.DataClassResponses.AverageRatingResponse
+import com.example.myapplication.data.DataClassResponses.CommentListResponse
+import com.example.myapplication.data.DataClassResponses.CommentRequest
+import com.example.myapplication.data.DataClassResponses.LikeRequest
 import com.example.myapplication.data.DataClassResponses.LoginResponse
 import com.example.myapplication.data.DataClassResponses.LogoutResponse
+import com.example.myapplication.data.DataClassResponses.RatePlantRequest
+import com.example.myapplication.data.DataClassResponses.RatePlantResponse
 import com.example.myapplication.data.DataClassResponses.RegisterResponse
+import com.example.myapplication.data.DataClassResponses.SimpleResponse
 import com.example.myapplication.data.DataClassResponses.UserInfoResponse
 import com.example.myapplication.data.IPFSResponse
 import com.example.myapplication.data.LoginRequest
@@ -15,6 +21,7 @@ import com.example.myapplication.data.PlantListResponse
 import com.example.myapplication.data.PlantResponse
 import com.example.myapplication.data.User
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -46,6 +53,12 @@ interface ApiService {
         @Query("limit") limit: Int = 10
     ): PaginatedPlantResponse
 
+    @GET("plants/{plantId}")
+    suspend fun getPlantById(
+        @Path("plantId") plantId: String,
+        @Header("Authorization") token: String? = null
+    ): DataClassResponses.GetPlantByIdResponse
+
     @GET("plants/search")
     suspend fun searchPlants(
         @Query("name") name: String = "",
@@ -59,6 +72,29 @@ interface ApiService {
         @Path("plantId") plantId: String
     ): AverageRatingResponse
 
+    @POST("plants/like")
+    suspend fun likePlant(
+        @Header("Authorization") token: String,
+        @Body request: LikeRequest
+    ): SimpleResponse
+
+    @POST("plants/comment")
+    suspend fun commentPlant(
+        @Header("Authorization") token: String,
+        @Body request: CommentRequest
+    ): SimpleResponse
+
+    @GET("plants/{plantId}/comments")
+    suspend fun getComments(
+        @Path("plantId") plantId: String
+    ): CommentListResponse
+
+    @POST("plants/rate")
+    suspend fun ratePlant(
+        @Header("Authorization") token: String,
+        @Body request: RatePlantRequest
+    ): RatePlantResponse
+
     /* ================================ IPFS ================================ */
     @Multipart
     @POST("ipfs/upload")
@@ -66,4 +102,9 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Part file: MultipartBody.Part
     ): Call<IPFSResponse>
+
+    @GET("ipfs/getFile/{cid}")
+    suspend fun getFileFromIPFS(
+        @Path("cid") cid: String
+    ): ResponseBody
 }

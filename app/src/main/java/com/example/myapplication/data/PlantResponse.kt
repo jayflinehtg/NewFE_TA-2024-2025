@@ -42,5 +42,11 @@ data class PlantResponse(
     val likeCount: String = "0",
 
     @SerializedName("owner")
-    val owner: String = ""
+    val owner: String = "",
+
+    @SerializedName("isLikedByUser")
+    val isLikedByUser: Boolean = false,
+
+    @SerializedName("isRatedByUser")
+    val isRatedByUser: Boolean
 )

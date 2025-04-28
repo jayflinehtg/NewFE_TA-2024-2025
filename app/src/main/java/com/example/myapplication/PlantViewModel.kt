@@ -5,8 +5,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.DataClassResponses
 import com.example.myapplication.data.DataClassResponses.AddPlantRequest
 import com.example.myapplication.data.DataClassResponses.AddPlantResponse
+import com.example.myapplication.data.DataClassResponses.RatePlantRequest
 import com.example.myapplication.data.DataClassResponses.RatedPlant
 import com.example.myapplication.data.PlantResponse
 import com.example.myapplication.data.PaginatedPlantResponse
@@ -22,6 +24,8 @@ import javax.inject.Inject
 class PlantViewModel @Inject constructor(
     private val apiService: ApiService
 ) : ViewModel() {
+
+    val apiServiceInstance get() = apiService
 
     // ==================== CID ====================
     private val _cid = mutableStateOf("")
@@ -123,6 +127,150 @@ class PlantViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("Pagination", "Error fetching plants: ${e.message}")
+            }
+        }
+    }
+
+    // Untuk menampilkan detail tanaman
+    private val _selectedPlant = mutableStateOf<PlantResponse?>(null)
+    val selectedPlant: State<PlantResponse?> = _selectedPlant
+
+    private val _selectedRating = mutableStateOf(0.0)
+    val selectedRating: State<Double> = _selectedRating
+
+    fun fetchPlantDetail(plantId: String, token: String? = null) {
+        viewModelScope.launch {
+            try {
+                val local = ratedPlantList.value.find { it.plant.id == plantId }
+                if (local != null) {
+                    _selectedPlant.value = local.plant
+                    _selectedRating.value = local.averageRating
+                } else {
+                    val response = apiService.getPlantById(plantId, token?.let { "Bearer $it" })
+                    if (response.success) {
+                        _selectedPlant.value = response.plant
+
+                        val ratingTotal = response.plant.ratingTotal.toDoubleOrNull() ?: 0.0
+                        val ratingCount = response.plant.ratingCount.toDoubleOrNull() ?: 0.0
+                        val average = if (ratingCount > 0) ratingTotal / ratingCount else 0.0
+
+                        _selectedRating.value = average
+                    } else {
+                        _selectedPlant.value = null
+                    }
+                }
+                Log.d("DetailViewModel", "Berhasil load detail tanaman")
+            } catch (e: Exception) {
+                Log.e("DetailViewModel", "Gagal load detail tanaman: ${e.message}")
+                _selectedPlant.value = null
+            }
+        }
+    }
+
+    // Untuk Like tanaman
+    fun likePlant(token: String, plantId: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.likePlant(token, DataClassResponses.LikeRequest(plantId))
+                if (response.success) {
+                    // Setelah sukses, ambil data terbaru
+                    try {
+                        val detailResponse = apiService.getPlantById(plantId, token)
+                        _selectedPlant.value = detailResponse.plant
+
+                        val ratingResponse = apiService.getAverageRating(plantId)
+                        _selectedRating.value = ratingResponse.averageRating.toDoubleOrNull() ?: 0.0
+
+                        onSuccess(response.txHash ?: "Like berhasil")
+                    } catch (e: Exception) {
+                        Log.e("LikePlant", "Error refreshing data: ${e.message}")
+                        onSuccess(response.txHash ?: "Like berhasil")
+                    }
+                } else {
+                    onError("Gagal menyukai tanaman")
+                }
+            } catch (e: Exception) {
+                Log.e("LikePlant", "Error: ${e.message}")
+                onError("Error: ${e.message}")
+            }
+        }
+    }
+
+    // Untuk Memberi Komentar Pada Tanaman
+    fun commentPlant(token: String, plantId: String, comment: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.commentPlant(token, DataClassResponses.CommentRequest(plantId, comment))
+                if (response.success) {
+                    onSuccess(response.txHash ?: "Komentar berhasil")
+                } else {
+                    onError("Gagal menambahkan komentar")
+                }
+            } catch (e: Exception) {
+                Log.e("CommentPlant", "Error: ${e.message}")
+                onError("Error: ${e.message}")
+            }
+        }
+    }
+
+    // Untuk mendapatkan komentar pada tanaman
+    private val _plantComments = mutableStateOf<List<DataClassResponses.Comment>>(emptyList())
+    val plantComments: State<List<DataClassResponses.Comment>> = _plantComments
+
+    fun getPlantComments(plantId: String) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.getComments(plantId)
+                if (response.success) {
+                    _plantComments.value = response.comments
+                }
+            } catch (e: Exception) {
+                Log.e("GetComments", "Error: ${e.message}")
+            }
+        }
+    }
+
+    // Untuk Menambahkan Rating pada tanaman
+    fun ratePlant(
+        token: String,
+        plantId: String,
+        rating: Int,
+        onSuccess: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.ratePlant(token, RatePlantRequest(plantId, rating))
+                if (response.success) {
+                    // Setelah sukses, ambil data terbaru langsung
+                    try {
+                        val detailResponse = apiService.getPlantById(plantId, token)
+                        _selectedPlant.value = detailResponse.plant
+
+                        val ratingResponse = apiService.getAverageRating(plantId)
+                        _selectedRating.value = ratingResponse.averageRating.toDoubleOrNull() ?: 0.0
+
+                        onSuccess(response.txHash ?: "Berhasil memberi rating.")
+                    } catch (e: Exception) {
+                        Log.e("RatePlant", "Error refreshing data: ${e.message}")
+                        onSuccess(response.txHash ?: "Berhasil memberi rating.")
+                    }
+                } else {
+                    onError(response.message)
+                }
+            } catch (e: Exception) {
+                onError("Gagal memberi rating: ${e.message}")
+            }
+        }
+    }
+
+    fun refreshPlantDetail(plantId: String, token: String) {
+        viewModelScope.launch {
+            try {
+                fetchPlantDetail(plantId, token)
+                getPlantComments(plantId)
+            } catch (e: Exception) {
+                Log.e("RefreshDetail", "Error: ${e.message}")
             }
         }
     }

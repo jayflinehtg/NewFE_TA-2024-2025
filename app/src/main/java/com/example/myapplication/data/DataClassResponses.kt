@@ -30,6 +30,11 @@ class DataClassResponses {
         @SerializedName("isLoggedIn") val isLoggedIn: Boolean
     )
 
+    data class GetPlantByIdResponse(
+        val success: Boolean,
+        val plant: PlantResponse
+    )
+
     data class UserInfoResponse(
         @SerializedName("success") val success: Boolean,
         @SerializedName("userData") val userData: UserData
@@ -61,5 +66,53 @@ class DataClassResponses {
     data class RatedPlant(
         val plant: PlantResponse,
         val averageRating: Double
+    )
+
+    // Request untuk memberi like
+    data class LikeRequest(
+        @SerializedName("plantId") val plantId: String
+    )
+
+    data class IsLikedResponse(
+        val success: Boolean,
+        val liked: Boolean
+    )
+
+    // Request untuk komentar
+    data class CommentRequest(
+        @SerializedName("plantId") val plantId: String,
+        @SerializedName("comment") val comment: String
+    )
+
+    // Response umum untuk like dan komentar
+    data class SimpleResponse(
+        @SerializedName("success") val success: Boolean,
+        @SerializedName("message") val message: String,
+        @SerializedName("txHash") val txHash: String,
+        @SerializedName("plantId") val plantId: String
+    )
+
+    // Komentar dari pengguna
+    data class Comment(
+        @SerializedName("publicKey") val publicKey: String,
+        @SerializedName("fullName") val fullName: String,
+        @SerializedName("comment") val comment: String,
+        @SerializedName("timestamp") val timestamp: String
+    )
+
+    data class CommentListResponse(
+        @SerializedName("success") val success: Boolean,
+        @SerializedName("comments") val comments: List<Comment>
+    )
+
+    data class RatePlantRequest(
+        @SerializedName("plantId") val plantId: String,
+        @SerializedName("rating") val rating: Int
+    )
+
+    data class RatePlantResponse(
+        @SerializedName("success") val success: Boolean,
+        @SerializedName("message") val message: String,
+        @SerializedName("txHash") val txHash: String?
     )
 }
