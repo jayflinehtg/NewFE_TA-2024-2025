@@ -67,8 +67,8 @@ fun DetailScreen(
     var isLoading by remember { mutableStateOf(true) }
     var showRatingDialog by remember { mutableStateOf(false) }
     var selectedRating by remember { mutableStateOf(3f) }
-    var localIsLiked by remember { mutableStateOf(false) }
     var isLiked by remember { mutableStateOf(false) }
+    var isLiking by remember { mutableStateOf(false) }
 
     val bitmapState = remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
 
@@ -195,29 +195,49 @@ fun DetailScreen(
                         label = "likeColor"
                     )
 
-                    IconButton(onClick = {
-                        viewModel.likePlant(
-                            token = token,
-                            plantId = plantId,
-                            onSuccess = {
-                                isLiked = !isLiked // Update local state
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Status like diperbarui.")
-                                }
-                                viewModel.refreshPlantDetail(plantId, token)
-                            },
-                            onError = {
-                                scope.launch {
-                                    snackbarHostState.showSnackbar("Harap login terlebih dahulu sebelum menambahkan Like")
-                                }
+                    IconButton(
+                        onClick = {
+                            if (!isLiking) {
+                                isLiking = true
+                                viewModel.likePlant(
+                                    token = token,
+                                    plantId = plantId,
+                                    onSuccess = {
+                                        scope.launch {
+                                            isLiked = !isLiked // Toggle state
+                                            snackbarHostState.showSnackbar(
+                                                if (isLiked) "Berhasil menyukai tanaman"
+                                                else "Berhasil batal menyukai tanaman"
+                                            )
+                                            viewModel.refreshPlantDetail(plantId, token)
+                                            isLiking = false // Reset loading state setelah selesai
+                                        }
+                                    },
+                                    onError = {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Harap login terlebih dahulu sebelum menambahkan Like")
+                                            isLiking = false // Reset loading state jika error
+                                        }
+                                    }
+                                )
                             }
-                        )
-                    }) {
-                        Icon(
-                            imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                            contentDescription = if (isLiked) "Batal Like" else "Like",
-                            tint = if (isLiked) Color.Red else Color.Gray // solid merah atau abu-abu
-                        )
+                        },
+                        enabled = !isLiking // Nonaktifkan tombol saat proses like berlangsung
+                    ) {
+                        if (isLiking) {
+                            // Tampilkan progress indicator kecil saat loading
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp,
+                                color = if (isLiked) Color.Red else Color.Gray
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                                contentDescription = if (isLiked) "Batal Like" else "Like",
+                                tint = if (isLiked) Color.Red else Color.Gray
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
