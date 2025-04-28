@@ -58,6 +58,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun resetGuestState() {
+        _uiState.update { it.copy(isGuest = false) }
+    }
+
     fun eventSink(eventSink: EventSink) {
         viewModelScope.launch {
             when (eventSink) {

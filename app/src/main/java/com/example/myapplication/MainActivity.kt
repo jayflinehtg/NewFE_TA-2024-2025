@@ -116,7 +116,7 @@ class MainActivity : ComponentActivity() {
 
                     // Home Screen (Bottom Navigation)
                     composable(Screen.Home.route) {
-                        BottomNavBarScreen(navController)
+                        BottomNavBarScreen(rootNavController = navController, isGuest = state.isGuest, viewModel = viewModel)
                     }
 
                     // Detail Screen (Dynamic PlantResponse ID)
