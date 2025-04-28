@@ -101,6 +101,7 @@ fun DetailScreen(
 
     LaunchedEffect(plant) {
         plant?.let {
+            likeCount = it.likeCount.toIntOrNull() ?: 0
             isLiked = it.isLikedByUser
             isLoading = false
         }

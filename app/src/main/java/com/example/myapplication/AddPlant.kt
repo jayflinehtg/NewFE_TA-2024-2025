@@ -254,7 +254,7 @@ fun AddPlant(
                     shape = RoundedCornerShape(50)
                 ) {
                     Text(
-                        text = if (isUploading) "Sedang Upload..." else "Konfirmasi",
+                        text = if (isUploading) "Sedang Upload..." else "Konfirmasi Gambar",
                         fontSize = 14.sp,
                         color = Color.White
                     )
