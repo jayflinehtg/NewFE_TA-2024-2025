@@ -67,7 +67,9 @@ fun DetailScreen(
     var isLoading by remember { mutableStateOf(true) }
     var showRatingDialog by remember { mutableStateOf(false) }
     var selectedRating by remember { mutableStateOf(3f) }
-    val isLiked = plant?.isLikedByUser == true
+    val isLiked by remember(plant) {
+        derivedStateOf { plant?.isLikedByUser == true }
+    }
     var isLiking by remember { mutableStateOf(false) }
 
     val bitmapState = remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
@@ -190,7 +192,7 @@ fun DetailScreen(
                 },
                 actions = {
                     val animatedTint by animateColorAsState(
-                        targetValue = if (isLiked) Color.Red else Color.Gray,
+                        targetValue = if (isLiked) Color.Gray else Color.Red,
                         label = "likeColor"
                     )
 
@@ -203,12 +205,12 @@ fun DetailScreen(
                                     plantId = plantId,
                                     onSuccess = {
                                         scope.launch {
-                                            // Tidak perlu toggle manual - refresh data akan memperbaharui isLikedByUser
+                                            viewModel.toggleLikeLocally() // Ubah state local dulu biar UI cepat berubah
                                             snackbarHostState.showSnackbar(
-                                                if (!isLiked) "Berhasil menyukai tanaman"
-                                                else "Berhasil batal menyukai tanaman"
+                                                if (isLiked) "Berhasil batal menyukai tanaman"
+                                                else "Berhasil menyukai tanaman"
                                             )
-                                            viewModel.refreshPlantDetail(plantId, token)
+                                            viewModel.refreshPlantDetail(plantId, token) // Baru sync server
                                             isLiking = false
                                         }
                                     },
@@ -223,18 +225,20 @@ fun DetailScreen(
                         },
                         enabled = !isLiking
                     ) {
-                        if (isLiking) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
-                                strokeWidth = 2.dp,
-                                color = if (isLiked) Color.Red else Color.Gray
-                            )
-                        } else {
+                        Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                                 contentDescription = if (isLiked) "Batal Like" else "Like",
-                                tint = animatedTint // Gunakan warna animasi untuk icon
+                                tint = animatedTint,
+                                modifier = Modifier.size(24.dp)
                             )
+                            if (isLiking) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(28.dp),
+                                    strokeWidth = 2.dp,
+                                    color = animatedTint
+                                )
+                            }
                         }
                     }
                 },

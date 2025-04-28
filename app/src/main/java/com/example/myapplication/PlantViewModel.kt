@@ -196,6 +196,15 @@ class PlantViewModel @Inject constructor(
         }
     }
 
+    fun toggleLikeLocally() {
+        _selectedPlant.value = _selectedPlant.value?.copy(
+            isLikedByUser = !(_selectedPlant.value?.isLikedByUser ?: false),
+            likeCount = (_selectedPlant.value?.likeCount?.toIntOrNull() ?: 0)
+                .let { if (_selectedPlant.value?.isLikedByUser == true) it - 1 else it + 1 }
+                .toString()
+        )
+    }
+
     // Untuk Memberi Komentar Pada Tanaman
     fun commentPlant(token: String, plantId: String, comment: String, onSuccess: (String) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
