@@ -67,7 +67,7 @@ fun DetailScreen(
     var isLoading by remember { mutableStateOf(true) }
     var showRatingDialog by remember { mutableStateOf(false) }
     var selectedRating by remember { mutableStateOf(3f) }
-    var isLiked by remember { mutableStateOf(false) }
+    val isLiked = plant?.isLikedByUser == true
     var isLiking by remember { mutableStateOf(false) }
 
     val bitmapState = remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
@@ -102,7 +102,6 @@ fun DetailScreen(
     LaunchedEffect(plant) {
         plant?.let {
             likeCount = it.likeCount.toIntOrNull() ?: 0
-            isLiked = it.isLikedByUser
             isLoading = false
         }
     }
@@ -204,28 +203,27 @@ fun DetailScreen(
                                     plantId = plantId,
                                     onSuccess = {
                                         scope.launch {
-                                            isLiked = !isLiked // Toggle state
+                                            // Tidak perlu toggle manual - refresh data akan memperbaharui isLikedByUser
                                             snackbarHostState.showSnackbar(
-                                                if (isLiked) "Berhasil menyukai tanaman"
+                                                if (!isLiked) "Berhasil menyukai tanaman"
                                                 else "Berhasil batal menyukai tanaman"
                                             )
                                             viewModel.refreshPlantDetail(plantId, token)
-                                            isLiking = false // Reset loading state setelah selesai
+                                            isLiking = false
                                         }
                                     },
                                     onError = {
                                         scope.launch {
                                             snackbarHostState.showSnackbar("Harap login terlebih dahulu sebelum menambahkan Like")
-                                            isLiking = false // Reset loading state jika error
+                                            isLiking = false
                                         }
                                     }
                                 )
                             }
                         },
-                        enabled = !isLiking // Nonaktifkan tombol saat proses like berlangsung
+                        enabled = !isLiking
                     ) {
                         if (isLiking) {
-                            // Tampilkan progress indicator kecil saat loading
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
                                 strokeWidth = 2.dp,
@@ -235,7 +233,7 @@ fun DetailScreen(
                             Icon(
                                 imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                                 contentDescription = if (isLiked) "Batal Like" else "Like",
-                                tint = if (isLiked) Color.Red else Color.Gray
+                                tint = animatedTint // Gunakan warna animasi untuk icon
                             )
                         }
                     }
