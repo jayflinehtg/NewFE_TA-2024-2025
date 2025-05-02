@@ -25,7 +25,31 @@ class PlantViewModel @Inject constructor(
     private val apiService: ApiService
 ) : ViewModel() {
 
+    // Menyimpan full name pemilik tanaman
+    private val _ownerFullName = mutableStateOf("")
+    val ownerFullName: State<String> = _ownerFullName
+
     val apiServiceInstance get() = apiService
+
+    // Fungsi untuk mengambil fullName berdasarkan wallet address (owner)
+    fun fetchOwnerFullName(ownerAddress: String) {
+        viewModelScope.launch {
+            try {
+                // Panggil API secara langsung tanpa menggunakan execute()
+                val response = apiService.getUserInfo(ownerAddress)
+
+                // Periksa hasil response
+                if (response.success) {
+                    val fullName = response.userData.fullName ?: "Unknown"
+                    _ownerFullName.value = fullName
+                } else {
+                    _ownerFullName.value = "Tidak dapat mengambil nama"
+                }
+            } catch (e: Exception) {
+                _ownerFullName.value = "Error mengambil data"
+            }
+        }
+    }
 
     // ==================== CID ====================
     private val _cid = mutableStateOf("")

@@ -61,6 +61,7 @@ fun DetailScreen(
     val plant by viewModel.selectedPlant
     val avgRating by viewModel.selectedRating
     val comments by viewModel.plantComments
+    val ownerFullName by viewModel.ownerFullName
 
     var comment by remember { mutableStateOf("") }
     var likeCount by remember { mutableStateOf(0) }
@@ -99,6 +100,10 @@ fun DetailScreen(
     LaunchedEffect(plantId) {
         viewModel.fetchPlantDetail(plantId, token)
         viewModel.getPlantComments(plantId)
+        plant?.owner?.let { ownerAddress ->
+            // Mengambil fullName owner berdasarkan wallet address (owner)
+            viewModel.fetchOwnerFullName(ownerAddress)
+        }
     }
 
     LaunchedEffect(plant) {
@@ -135,7 +140,7 @@ fun DetailScreen(
                                 val message = if (errorMessage.contains("sudah memberi rating", ignoreCase = true)) {
                                     "Anda sudah pernah memberikan rating pada tanaman ini sebelumnya."
                                 } else {
-                                    "Anda sudah pernah memberikan rating pada tanaman ini sebelumnya."
+                                    "Harap login terlebih dahulu untuk memberikan rating."
                                 }
                                 snackbarHostState.showSnackbar(message)
                             }
@@ -216,7 +221,7 @@ fun DetailScreen(
                                     },
                                     onError = {
                                         scope.launch {
-                                            snackbarHostState.showSnackbar("Harap login terlebih dahulu sebelum menambahkan Like")
+                                            snackbarHostState.showSnackbar("Harap login terlebih dahulu sebelum memberikan Like")
                                             isLiking = false
                                         }
                                     }
@@ -301,6 +306,8 @@ fun DetailScreen(
                 plant?.let {
                     Text(it.name, fontSize = 26.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
+
+                    Text("Owner: $ownerFullName (${it.owner})", color = textColor)
 
                     DetailItem("Nama Latin", it.namaLatin, textColor)
                     DetailItem("Komposisi", it.komposisi, textColor)

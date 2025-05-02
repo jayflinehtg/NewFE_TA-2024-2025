@@ -137,6 +137,8 @@ fun LoginScreen(
                                 // Buat objek UserLogin untuk mengirim login request
                                 val userLogin = LoginRequest(walletAddress, password)
 
+                                Log.d("Login", "Wallet Address: $walletAddress, Password: $password")
+
                                 // Panggil API untuk login
                                 RetrofitClient.apiService.loginUser(userLogin).enqueue(object : Callback<LoginResponse> {
                                     override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {

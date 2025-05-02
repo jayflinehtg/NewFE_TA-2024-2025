@@ -169,8 +169,25 @@ fun RegisterScreen(
                     // Tombol Daftar
                     Button(
                         onClick = {
+                            // Validasi input form
+                            if (fullName.isEmpty()) {
+                                fullNameError = "Nama lengkap harus diisi"
+                                return@Button
+                            }
+                            if (password.isEmpty()) {
+                                passwordError = "Password tidak boleh kosong"
+                                return@Button
+                            }
+
+                            Log.d("Password", "Password yang dikirim: $password")
+
+                            // Ambil walletAddress yang sudah disimpan di PreferencesHelper
+                            val walletAddress = PreferencesHelper.getWalletAddress(context)
+
                             // Buat objek user dengan walletAddress yang diterima
                             val user = User(fullName, walletAddress ?: "", password)
+
+                            Log.d("WalletAddress", "Wallet Address: $walletAddress")
 
                             // Panggil API untuk register
                             RetrofitClient.apiService.registerUser(user).enqueue(object : Callback<RegisterResponse> {
