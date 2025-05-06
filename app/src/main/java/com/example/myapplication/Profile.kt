@@ -27,7 +27,7 @@ fun Profile(navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val walletAddress = PreferencesHelper.getWalletAddress(context).orEmpty()
-    val isLoggedIn = PreferencesHelper.getJwtToken(context) != null // Cek keberadaan JWT token
+    val isLoggedIn = PreferencesHelper.getJwtToken(context) != null // Cek apakah user sudah logout atau belum
 
     // Ambil data user dari PreferencesHelper saat composable dibuat
     LaunchedEffect(Unit) {
@@ -74,12 +74,22 @@ fun Profile(navController: NavController) {
         )
 
         Text(
-            text = if (isLoggedIn) "Sudah Login" else "Belum Login",
+            text = if (isLoggedIn) "Logged In" else "Logged Out",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             color = if (isLoggedIn) Color.Green else Color.Red,
             modifier = Modifier.padding(bottom = 24.dp)
         )
+
+        // Jika user tidak login, tampilkan pesan untuk menghubungkan wallet
+        if (!isLoggedIn) {
+            Text(
+                text = "Silahkan hubungkan ulang wallet Anda",
+                fontSize = 16.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+        }
 
         // Tombol Keluar
         Button(

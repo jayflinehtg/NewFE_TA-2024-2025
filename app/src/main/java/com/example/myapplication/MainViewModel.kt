@@ -265,6 +265,7 @@ class MainViewModel @Inject constructor(
             eventSink(EventSink.Disconnect)
             Log.d("Logout And Disconnect", "Proses Logout telah berhasil")
             _uiEvent.emit(UiEvent.NavigateTo("walletComponent"))
+            Log.d("MainViewModel", "Navigasi ke WalletComponent dipicu")
         }
     }
 

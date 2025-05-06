@@ -108,8 +108,8 @@ fun RegisterScreen(
                             fullName = it
                             fullNameError = null
                         },
-                        label = { Text("Nama Lengkap") },
-                        placeholder = { Text("Masukkan Nama Lengkap") },
+                        label = { Text("Nama Lengkap", style = TextStyle(color = Color.Black)) },
+                        placeholder = { Text("Masukkan Nama Lengkap", style = TextStyle(color = Color.Gray)) },
                         textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -140,7 +140,7 @@ fun RegisterScreen(
                             password = it
                             passwordError = null
                         },
-                        label = { Text("Kata Sandi") },
+                        label = { Text("Kata Sandi", style = TextStyle(color = Color.Black)) },
                         placeholder = { Text("Masukkan Kata Sandi") },
                         visualTransformation = PasswordVisualTransformation(),
                         textStyle = TextStyle(color = Color.Black, fontSize = 16.sp),

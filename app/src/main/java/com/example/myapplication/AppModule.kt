@@ -37,7 +37,7 @@ internal object AppModule {
         // Pilih jaringan yang digunakan di sini, tinggal uncomment yang digunakan
         val readonlyRPCMap = mapOf(
             // Ganache
-            "Ganache" to "http://192.168.3.202:7545", // RPC URL untuk Ganache
+            "Ganache" to "http://192.168.1.105:7545" // RPC URL untuk Ganache
             // Tea-Sepolia
 //             "Tea-Sepolia" to "https://tea-sepolia.g.alchemy.com/public" // RPC URL untuk Tea-Sepolia
         )

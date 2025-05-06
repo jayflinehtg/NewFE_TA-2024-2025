@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.SnackbarHost
@@ -48,8 +49,10 @@ class MainActivity : ComponentActivity() {
                     viewModel.uiEvent.collect { event ->
                         when (event) {
                             is UiEvent.NavigateTo -> {
+                                Log.d("MainActivity", "Navigasi ke: ${event.route}")
                                 navController.navigate(event.route) {
-                                    popUpTo("walletComponent") { inclusive = true }
+                                    popUpTo(Screen.WalletComponent.route) { inclusive = true }
+                                    launchSingleTop = true
                                 }
                             }
                             is UiEvent.Message -> {

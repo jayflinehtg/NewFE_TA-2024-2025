@@ -135,7 +135,7 @@ fun Home(
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Cari nama/komposisi/kegunaan tanaman", color = Color.Gray) },
+            placeholder = { Text("Cari Info Tanaman", color = Color.Gray) },
             textStyle = TextStyle(color = Color.Black),
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
             modifier = Modifier.fillMaxWidth(),

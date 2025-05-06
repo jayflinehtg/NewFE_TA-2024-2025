@@ -44,7 +44,7 @@ fun BottomNavBarScreen(rootNavController: NavHostController, isGuest: Boolean, v
                                         launchSingleTop = true
                                         restoreState = true
                                     }
-                                    viewModel.resetGuestState() // ⬅️ Reset isGuest supaya WalletComponent muncul connect button
+                                    viewModel.resetGuestState() // Reset isGuest supaya WalletComponent muncul
                                 } else {
                                     bottomNavController.navigate(item.route) {
                                         popUpTo(bottomNavController.graph.startDestinationId) {

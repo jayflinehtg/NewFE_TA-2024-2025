@@ -137,10 +137,17 @@ fun DetailScreen(
                         },
                         onError = { errorMessage ->
                             scope.launch {
-                                val message = if (errorMessage.contains("sudah memberi rating", ignoreCase = true)) {
-                                    "Anda sudah pernah memberikan rating pada tanaman ini sebelumnya."
-                                } else {
-                                    "Harap login terlebih dahulu untuk memberikan rating."
+                                // Menampilkan pesan error berdasarkan error message
+                                val message = when {
+                                    errorMessage.contains("rating", ignoreCase = true) -> {
+                                        "Rating berhasil diperbarui!"
+                                    }
+                                    errorMessage.contains("login", ignoreCase = true) -> {
+                                        "Harap login terlebih dahulu untuk memberikan rating."
+                                    }
+                                    else -> {
+                                        "Terjadi kesalahan, coba lagi nanti."
+                                    }
                                 }
                                 snackbarHostState.showSnackbar(message)
                             }
@@ -189,7 +196,7 @@ fun DetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Tanaman", fontSize = 20.sp, color = darkGreen) },
+                title = { Text("Detail Tanaman", fontSize = 20.sp, color = darkGreen, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = darkGreen)
@@ -307,7 +314,7 @@ fun DetailScreen(
                     Text(it.name, fontSize = 26.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text("Owner: $ownerFullName (${it.owner})", color = textColor)
+                    Text("Owner: $ownerFullName (${it.owner})", color = textColor, fontWeight = FontWeight.Bold)
 
                     DetailItem("Nama Latin", it.namaLatin, textColor)
                     DetailItem("Komposisi", it.komposisi, textColor)
