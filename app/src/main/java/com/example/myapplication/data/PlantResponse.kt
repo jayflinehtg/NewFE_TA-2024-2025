@@ -20,14 +20,29 @@ data class PlantResponse(
     @SerializedName("namaLatin")
     val namaLatin: String,
 
+    @SerializedName("bentukTanaman")
+    val bentukTanaman: String,
+
     @SerializedName("komposisi")
     val komposisi: String,
+
+    @SerializedName("wilayahPenyebaran")
+    val wilayahPenyebaran: String,
+
+    @SerializedName("bagianYangDigunakan")
+    val bagianYangDigunakan: String,
 
     @SerializedName("kegunaan")
     val kegunaan: String,
 
+    @SerializedName("dosis")
+    val dosis: String,
+
     @SerializedName("caraPengolahan")
     val caraPengolahan: String,
+
+    @SerializedName("efekSamping")
+    val efekSamping: String,
 
     @SerializedName("ipfsHash")
     val ipfsHash: String,

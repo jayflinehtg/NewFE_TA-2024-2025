@@ -317,9 +317,14 @@ fun DetailScreen(
                     Text("Owner: $ownerFullName (${it.owner})", color = textColor, fontWeight = FontWeight.Bold)
 
                     DetailItem("Nama Latin", it.namaLatin, textColor)
+                    DetailItem("Bentuk Tanaman", it.bentukTanaman, textColor)
                     DetailItem("Komposisi", it.komposisi, textColor)
+                    DetailItem("Wilayah Penyebaran", it.wilayahPenyebaran, textColor)
+                    DetailItem("Bagian Yang Digunakan", it.bagianYangDigunakan, textColor)
                     DetailItem("Kegunaan", it.kegunaan, textColor)
+                    DetailItem("Dosis", it.dosis, textColor)
                     DetailItem("Cara Pengolahan", it.caraPengolahan, textColor)
+                    DetailItem("Efek Samping", it.efekSamping, textColor)
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Rating Rata-rata: $avgRating", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = textColor)

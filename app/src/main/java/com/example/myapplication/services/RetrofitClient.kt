@@ -11,9 +11,8 @@ object RetrofitClient {
 
     // Konfigurasi Ethereum
     const val ETH_INFURA_API_KEY = "98144ec0a3b54b3582ccdd2e99921cf5"
-//    const val ETH_NETWORK_ID = "0x16CC8" // dalam desimal
-//    const val ETH_RPC_URL = "https://tea-sepolia.g.alchemy.com/public"
-//    const val ETH_CONTRACT_ADDRESS = "0xc43F5dE07e0Ea6754329365D1A89A2f6fc53Ab9C"
+    const val ETH_RPC_URL = "https://tea-sepolia.g.alchemy.com/public"  // RPC URL untuk Tea-Sepolia
+    const val ETH_NETWORK_ID = "10218"  // Tea-Sepolia Network ID
 
     // Retrofit instance untuk API service
     private val retrofit = Retrofit.Builder()

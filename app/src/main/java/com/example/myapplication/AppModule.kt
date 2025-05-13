@@ -39,7 +39,7 @@ internal object AppModule {
             // Ganache
             "Ganache" to "http://192.168.1.105:7545" // RPC URL untuk Ganache
             // Tea-Sepolia
-//             "Tea-Sepolia" to "https://tea-sepolia.g.alchemy.com/public" // RPC URL untuk Tea-Sepolia
+            // "Tea-Sepolia" to RetrofitClient.ETH_RPC_URL // RPC URL untuk Tea-Sepolia
         )
 
         // Membuat SDKOptions dengan Infura API Key dan readonlyRPCMap

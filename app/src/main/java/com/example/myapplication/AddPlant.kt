@@ -50,9 +50,15 @@ fun AddPlant(
     val context = LocalContext.current
     var namaTanaman by remember { mutableStateOf("") }
     var namaLatin by remember { mutableStateOf("") }
+    var bentukTanaman by remember { mutableStateOf("") }
     var komposisi by remember { mutableStateOf("") }
+    var wilayahPenyebaran by remember { mutableStateOf("") }
+    var bagianYangDigunakan by remember { mutableStateOf("") }
     var manfaat by remember { mutableStateOf("") }
+    var dosis by remember { mutableStateOf("") }
     var caraPengolahan by remember { mutableStateOf("") }
+    var efekSamping by remember { mutableStateOf("") }
+
     var gambarUri by remember { mutableStateOf<Uri?>(null) }
     var showError by remember { mutableStateOf(false) }
     var isUploading by remember { mutableStateOf(false) }
@@ -100,9 +106,14 @@ fun AddPlant(
                 // Form fields dengan teks hitam
                 FormField("Nama Tanaman", namaTanaman, showError && namaTanaman.isBlank()) { namaTanaman = it }
                 FormField("Nama Latin", namaLatin, showError && namaLatin.isBlank()) { namaLatin = it }
+                FormField("Bentuk Tanaman", bentukTanaman, showError && bentukTanaman.isBlank()) { bentukTanaman = it }
                 FormField("Komposisi", komposisi, showError && komposisi.isBlank()) { komposisi = it }
+                FormField("Wilayah Penyebaran", wilayahPenyebaran, showError && wilayahPenyebaran.isBlank()) { wilayahPenyebaran = it }
+                FormField("Bagian Yang Digunakan", bagianYangDigunakan, showError && bagianYangDigunakan.isBlank()) { bagianYangDigunakan = it }
                 FormField("Manfaat", manfaat, showError && manfaat.isBlank()) { manfaat = it }
+                FormField("Dosis", dosis, showError && dosis.isBlank()) { dosis = it }
                 FormField("Cara Pengolahan", caraPengolahan, showError && caraPengolahan.isBlank()) { caraPengolahan = it }
+                FormField("Efek Samping", efekSamping, showError && efekSamping.isBlank()) { efekSamping = it }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -282,10 +293,15 @@ fun AddPlant(
                             val request = AddPlantRequest(
                                 name = namaTanaman,
                                 namaLatin = namaLatin,
+                                bentukTanaman = bentukTanaman,
                                 komposisi = komposisi,
+                                wilayahPenyebaran = wilayahPenyebaran,
+                                bagianYangDigunakan = bagianYangDigunakan,
                                 kegunaan = manfaat,
                                 caraPengolahan = caraPengolahan,
-                                ipfsHash = cid // Menggunakan CID yang telah disimpan di ViewModel
+                                efekSamping = efekSamping,
+                                dosis = dosis,
+                                ipfsHash = cid
                             )
 
                             viewModel.addPlant(

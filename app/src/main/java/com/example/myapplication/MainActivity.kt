@@ -130,7 +130,7 @@ class MainActivity : ComponentActivity() {
 
                         val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
                         val plantViewModel: PlantViewModel = hiltViewModel()
-                        val token = viewModel.userToken // Tambahkan ini di MainViewModel-mu jika belum
+                        val token = viewModel.userToken
 
                         if (plantId.isNotEmpty()) {
                             DetailScreen(
