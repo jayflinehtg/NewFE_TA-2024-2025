@@ -14,8 +14,6 @@ import com.example.myapplication.data.PlantResponse
 import com.example.myapplication.data.PaginatedPlantResponse
 import com.example.myapplication.services.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
@@ -71,6 +69,7 @@ class PlantViewModel @Inject constructor(
                 Log.d("AddPlant", "Sending request to backend with: $request")
                 Log.d("AddPlant", "Authorization Token: $token")
 
+                // Mengirim request ke API untuk menambahkan tanaman
                 val response = apiService.addPlant(token, request)
                 Log.d("AddPlant", "Success! Response: ${response.message}")
                 onSuccess(response)

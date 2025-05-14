@@ -12,56 +12,47 @@ data class PlantListResponse(
 
 data class PlantResponse(
     @SerializedName("plantId")
-    val id: String = "",
+    val id: String = "",  // Pastikan ID di sini adalah string, sesuai dengan pengembalian data
 
     @SerializedName("name")
-    val name: String,
+    val name: String,  // Nama tanaman
 
     @SerializedName("namaLatin")
-    val namaLatin: String,
-
-    @SerializedName("bentukTanaman")
-    val bentukTanaman: String,
+    val namaLatin: String,  // Nama latin tanaman
 
     @SerializedName("komposisi")
-    val komposisi: String,
-
-    @SerializedName("wilayahPenyebaran")
-    val wilayahPenyebaran: String,
-
-    @SerializedName("bagianYangDigunakan")
-    val bagianYangDigunakan: String,
+    val komposisi: String,  // Komposisi tanaman
 
     @SerializedName("kegunaan")
-    val kegunaan: String,
+    val kegunaan: String,  // Kegunaan tanaman
 
     @SerializedName("dosis")
-    val dosis: String,
+    val dosis: String,  // Dosis penggunaan tanaman
 
     @SerializedName("caraPengolahan")
-    val caraPengolahan: String,
+    val caraPengolahan: String,  // Cara pengolahan tanaman
 
     @SerializedName("efekSamping")
-    val efekSamping: String,
+    val efekSamping: String,  // Efek samping dari tanaman
 
     @SerializedName("ipfsHash")
-    val ipfsHash: String,
+    val ipfsHash: String,  // Hash dari IPFS yang menyimpan informasi tambahan
 
     @SerializedName("ratingTotal")
-    val ratingTotal: String = "0",
+    val ratingTotal: String = "0",  // Total rating tanaman
 
     @SerializedName("ratingCount")
-    val ratingCount: String = "0",
+    val ratingCount: String = "0",  // Jumlah rating yang diterima tanaman
 
     @SerializedName("likeCount")
-    val likeCount: String = "0",
+    val likeCount: String = "0",  // Jumlah like yang diterima tanaman
 
     @SerializedName("owner")
-    val owner: String = "",
+    val owner: String = "",  // Pemilik tanaman
 
     @SerializedName("isLikedByUser")
-    val isLikedByUser: Boolean = false,
+    val isLikedByUser: Boolean = false,  // Status apakah user telah memberikan like
 
     @SerializedName("isRatedByUser")
-    val isRatedByUser: Boolean
+    val isRatedByUser: Boolean  // Status apakah user telah memberikan rating
 )
