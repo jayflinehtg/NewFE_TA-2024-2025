@@ -64,7 +64,7 @@ fun LoginScreen(
         ) {
             // LOGO
             Image(
-                painter = painterResource(id = R.drawable.plant), // Ganti dengan resource logo yang sesuai
+                painter = painterResource(id = R.drawable.plant),
                 contentDescription = "Logo Tanaman",
                 modifier = Modifier
                     .size(130.dp)
@@ -132,6 +132,11 @@ fun LoginScreen(
                     // Login Button
                     Button(
                         onClick = {
+                            if (password.isEmpty()) {
+                                passwordError = "Password tidak boleh kosong"
+                                return@Button
+                            }
+
                             // Pastikan walletAddress tidak null
                             if (walletAddress != null) {
                                 // Buat objek UserLogin untuk mengirim login request
