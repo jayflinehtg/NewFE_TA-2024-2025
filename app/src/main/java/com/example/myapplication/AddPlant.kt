@@ -289,9 +289,9 @@ fun AddPlant(
                                 namaLatin = namaLatin,
                                 komposisi = komposisi,
                                 kegunaan = manfaat,
+                                dosis = dosis,
                                 caraPengolahan = caraPengolahan,
                                 efekSamping = efekSamping,
-                                dosis = dosis,
                                 ipfsHash = cid
                             )
 
@@ -324,7 +324,26 @@ fun AddPlant(
 }
 
 @Composable
-fun FormField(label: String, value: String, isError: Boolean, onChange: (String) -> Unit) {
+fun FormField(
+    label: String,
+    value: String,
+    isError: Boolean,
+    onChange: (String) -> Unit,
+    maxChar: Int = when(label) {
+        "Cara Pengolahan" -> 1000
+        "Manfaat" -> 1000
+        "Efek Samping" -> 1000
+        "Komposisi" -> 750
+        else -> 255
+    }
+) {
+    val isExceedLimit = value.length > maxChar
+    val errorText = when {
+        isError -> "$label tidak boleh kosong"
+        isExceedLimit -> "$label tidak boleh lebih dari $maxChar karakter"
+        else -> ""
+    }
+
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(
             text = label,
@@ -334,19 +353,33 @@ fun FormField(label: String, value: String, isError: Boolean, onChange: (String)
         )
         OutlinedTextField(
             value = value,
-            onValueChange = onChange,
+            onValueChange = { newText ->
+                // Hanya menerima input jika belum melebihi batas karakter
+                if (newText.length <= maxChar) {
+                    onChange(newText)
+                }
+            },
             singleLine = false,
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
             textStyle = TextStyle(color = Color.Black, fontSize = 14.sp),
-            isError = isError,
+            isError = isError || isExceedLimit,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            supportingText = {
+                Text(
+                    text = "${value.length}/$maxChar",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                    fontSize = 12.sp,
+                    color = if (isExceedLimit) Color.Red else Color.Gray
+                )
+            }
         )
-        if (isError) {
+        if (errorText.isNotEmpty()) {
             Text(
-                text = "$label tidak boleh kosong",
+                text = errorText,
                 color = Color.Red,
                 fontSize = 12.sp,
                 modifier = Modifier.padding(top = 4.dp)
