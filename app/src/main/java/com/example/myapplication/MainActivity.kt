@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import com.example.myapplication.data.UiEvent
 import com.example.myapplication.ui.components.BottomNavBarScreen
 import com.example.myapplication.ui.components.WalletComponent
+import com.example.myapplication.ui.screen.EditPlantScreen
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object Login : Screen("login")
     object Home : Screen("home")
+    object EditPlant : Screen("editplant/{plantId}")
     object Detail : Screen("detail/{plantId}")
 }
 
@@ -69,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = Screen.WalletComponent.route // Mulai dari WalletComponent
+                    startDestination = Screen.WalletComponent.route
                 ) {
                     // Wallet Component Screen
                     composable(Screen.WalletComponent.route) {
@@ -87,7 +89,6 @@ class MainActivity : ComponentActivity() {
                             navController = navController,
                             onRegisterSuccess = { walletAddress ->
                                 viewModel.onRegisterSuccess(walletAddress)
-                                // Navigasi ke LoginScreen setelah berhasil registrasi
                                 navController.navigate(Screen.Login.route) {
                                     popUpTo(Screen.Register.route) { inclusive = true }
                                 }
@@ -117,17 +118,20 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    // Home Screen (Bottom Navigation)
+                    // Home Screen
                     composable(Screen.Home.route) {
-                        BottomNavBarScreen(rootNavController = navController, isGuest = state.isGuest, viewModel = viewModel)
+                        BottomNavBarScreen(
+                            rootNavController = navController,
+                            isGuest = state.isGuest,
+                            viewModel = viewModel
+                        )
                     }
 
-                    // Detail Screen (Dynamic PlantResponse ID)
+                    // Detail Screen
                     composable(
                         Screen.Detail.route,
                         arguments = listOf(navArgument("plantId") { type = NavType.StringType })
                     ) { backStackEntry ->
-
                         val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
                         val plantViewModel: PlantViewModel = hiltViewModel()
                         val token = viewModel.userToken
@@ -136,12 +140,39 @@ class MainActivity : ComponentActivity() {
                             DetailScreen(
                                 plantId = plantId,
                                 token = token,
-                                viewModel = plantViewModel,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                onEdit = { // Tambahkan parameter onEdit
+                                    navController.navigate("editplant/$plantId")
+                                },
+                                viewModel = plantViewModel
                             )
                         } else {
-                            Text("PlantResponse ID tidak valid.")
+                            Text("Plant ID tidak valid.")
                         }
+                    }
+
+                    // Edit Plant Screen
+                    composable(
+                        Screen.EditPlant.route,
+                        arguments = listOf(navArgument("plantId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        val plantId = backStackEntry.arguments?.getString("plantId") ?: ""
+                        if (plantId.isEmpty()) {
+                            Text("Plant ID kosong")
+                            return@composable
+                        }
+                        EditPlantScreen(
+                            navController = navController,
+                            plantId = plantId,
+                            viewModel = hiltViewModel()
+                        )
+                        val plantViewModel: PlantViewModel = hiltViewModel()
+
+                        EditPlantScreen(
+                            navController = navController,
+                            plantId = plantId,
+                            viewModel = plantViewModel
+                        )
                     }
                 }
             }

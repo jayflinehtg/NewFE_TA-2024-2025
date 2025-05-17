@@ -60,6 +60,27 @@ class DataClassResponses {
         @SerializedName("plantId") val plantId: String
     )
 
+    // Data Class untuk EditPlant Request
+    data class EditPlantRequest(
+        @SerializedName("plantId") val plantId: String,
+        @SerializedName("name") val name: String,
+        @SerializedName("namaLatin") val namaLatin: String,
+        @SerializedName("komposisi") val komposisi: String,
+        @SerializedName("kegunaan") val kegunaan: String,
+        @SerializedName("dosis") val dosis: String,
+        @SerializedName("caraPengolahan") val caraPengolahan: String,
+        @SerializedName("efekSamping") val efekSamping: String,
+        @SerializedName("ipfsHash") val ipfsHash: String
+    )
+
+    // Data Class untuk EditPlant Response
+    data class EditPlantResponse(
+        @SerializedName("success") val success: Boolean,
+        @SerializedName("message") val message: String,
+        @SerializedName("txHash") val txHash: String,
+        @SerializedName("plantId") val plantId: String
+    )
+
     data class AverageRatingResponse(
         @SerializedName("success") val success: Boolean,
         @SerializedName("averageRating") val averageRating: String

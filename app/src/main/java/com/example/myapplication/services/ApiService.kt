@@ -6,6 +6,8 @@ import com.example.myapplication.data.DataClassResponses.AddPlantResponse
 import com.example.myapplication.data.DataClassResponses.AverageRatingResponse
 import com.example.myapplication.data.DataClassResponses.CommentListResponse
 import com.example.myapplication.data.DataClassResponses.CommentRequest
+import com.example.myapplication.data.DataClassResponses.EditPlantRequest
+import com.example.myapplication.data.DataClassResponses.EditPlantResponse
 import com.example.myapplication.data.DataClassResponses.LikeRequest
 import com.example.myapplication.data.DataClassResponses.LoginResponse
 import com.example.myapplication.data.DataClassResponses.LogoutResponse
@@ -46,6 +48,13 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: AddPlantRequest
     ): AddPlantResponse
+
+    @PUT("plants/edit/{plantId}")
+    suspend fun editPlant(
+        @Header("Authorization") token: String,
+        @Path("plantId") plantId: String,
+        @Body request: EditPlantRequest
+    ): EditPlantResponse
 
     @GET("plants/all")
     suspend fun getPaginatedPlants(

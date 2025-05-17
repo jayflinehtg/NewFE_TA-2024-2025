@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -12,6 +13,7 @@ import com.example.myapplication.data.DataClassResponses.RatePlantRequest
 import com.example.myapplication.data.DataClassResponses.RatedPlant
 import com.example.myapplication.data.PlantResponse
 import com.example.myapplication.data.PaginatedPlantResponse
+import com.example.myapplication.data.PreferencesHelper
 import com.example.myapplication.services.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -20,8 +22,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlantViewModel @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val context: Context
 ) : ViewModel() {
+
+    // Menyimpan alamat pengguna yang sedang login
+    private val _userAddress = mutableStateOf<String?>(null)
+    val userAddress: State<String?> = _userAddress
+
+    init {
+        // Mengambil alamat pengguna dari SharedPreferences (PreferencesHelper)
+        _userAddress.value = PreferencesHelper.getWalletAddress(context)
+    }
 
     // Menyimpan full name pemilik tanaman
     private val _ownerFullName = mutableStateOf("")
@@ -80,6 +92,45 @@ class PlantViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("AddPlant", "Exception: ${e.message}", e)
                 onError("Terjadi kesalahan: ${e.message}")
+            }
+        }
+    }
+
+    // ==================== Edit Tanaman =======================
+    fun editPlant(
+        token: String,
+        request: DataClassResponses.EditPlantRequest,
+        onSuccess: (DataClassResponses.EditPlantResponse) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                Log.d("EditPlant", "Mengedit tanaman ID: ${request.plantId}")
+                Log.d("EditPlant", "Request data: $request")
+
+                val response = apiService.editPlant(
+                    token = token,
+                    plantId = request.plantId,
+                    request = request
+                )
+
+                if (response.success) {
+                    Log.d("EditPlant", "Edit berhasil! TX Hash: ${response.txHash}")
+                    // Refresh data tanaman yang diedit
+                    fetchPlantDetail(request.plantId, token)
+                    onSuccess(response)
+                } else {
+                    Log.e("EditPlant", "Gagal edit: ${response.message}")
+                    onError(response.message)
+                }
+            } catch (e: IOException) {
+                val errorMsg = "Error jaringan: ${e.message}"
+                Log.e("EditPlant", errorMsg, e)
+                onError(errorMsg)
+            } catch (e: Exception) {
+                val errorMsg = "Error: ${e.message}"
+                Log.e("EditPlant", errorMsg, e)
+                onError(errorMsg)
             }
         }
     }

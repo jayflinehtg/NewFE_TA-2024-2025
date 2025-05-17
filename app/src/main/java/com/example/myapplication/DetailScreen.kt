@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.graphics.BitmapFactory
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.ui.graphics.asImageBitmap
@@ -48,6 +49,7 @@ fun DetailScreen(
     plantId: String,
     token: String,
     onBack: () -> Unit,
+    onEdit: () -> Unit, // Fungsi untuk menavigasi ke screen edit
     viewModel: PlantViewModel = hiltViewModel()
 ) {
     val backgroundColor = Color(0xFFEAF4E9)
@@ -62,6 +64,7 @@ fun DetailScreen(
     val avgRating by viewModel.selectedRating
     val comments by viewModel.plantComments
     val ownerFullName by viewModel.ownerFullName
+    val userAddress by viewModel.userAddress // Ambil userAddress dari viewModel
 
     var comment by remember { mutableStateOf("") }
     var likeCount by remember { mutableStateOf(0) }
@@ -137,7 +140,6 @@ fun DetailScreen(
                         },
                         onError = { errorMessage ->
                             scope.launch {
-                                // Menampilkan pesan error berdasarkan error message
                                 val message = when {
                                     errorMessage.contains("rating", ignoreCase = true) -> {
                                         "Rating berhasil diperbarui!"
@@ -251,6 +253,13 @@ fun DetailScreen(
                                     color = animatedTint
                                 )
                             }
+                        }
+                    }
+
+                    // Menambahkan tombol Edit jika pemilik tanaman
+                    if (plant?.owner == userAddress) {
+                        IconButton(onClick = onEdit) {
+                            Icon(Icons.Filled.Edit, contentDescription = "Edit Tanaman", tint = Color.Blue)
                         }
                     }
                 },
