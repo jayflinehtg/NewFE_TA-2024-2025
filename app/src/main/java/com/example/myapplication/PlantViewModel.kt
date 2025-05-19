@@ -16,6 +16,7 @@ import com.example.myapplication.data.PaginatedPlantResponse
 import com.example.myapplication.data.PreferencesHelper
 import com.example.myapplication.services.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
@@ -23,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PlantViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     // Menyimpan alamat pengguna yang sedang login
