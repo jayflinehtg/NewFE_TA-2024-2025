@@ -2,6 +2,7 @@ package com.example.myapplication
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -93,6 +94,34 @@ class PlantViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("AddPlant", "Exception: ${e.message}", e)
                 onError("Terjadi kesalahan: ${e.message}")
+            }
+        }
+    }
+
+    fun syncPlantToPublic(plantId: String) {
+        viewModelScope.launch {
+            try {
+                // Ambil token JWT dari preferences
+                val jwtTokenRaw = PreferencesHelper.getJwtToken(context)
+                val jwtToken = "Bearer ${jwtTokenRaw ?: ""}"
+
+                // Memanggil API backend untuk sinkronisasi
+                val response = apiService.syncPlantToPublic(
+                    token = jwtToken,
+                    plantId = plantId
+                )
+
+                if (response.success) {
+                    // Menampilkan pesan sukses
+                    Log.d("syncPlant", "Sinkronisasi berhasil dengan txHash: ${response.publicTx}")
+                    Toast.makeText(context, "Tanaman berhasil disinkronkan ke jaringan publik!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.e("syncPlant", "Gagal sinkronkan tanaman")
+                    Toast.makeText(context, "Gagal sinkronkan tanaman ke jaringan publik", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("syncPlant", "Error: ${e.message}")
+                Toast.makeText(context, "Terjadi kesalahan saat sinkronisasi", Toast.LENGTH_SHORT).show()
             }
         }
     }

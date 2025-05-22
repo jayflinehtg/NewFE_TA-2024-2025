@@ -257,7 +257,7 @@ fun DetailScreen(
                     }
 
                     // Menambahkan tombol Edit jika pemilik tanaman
-                    if (plant?.owner == userAddress) {
+                    if (plant?.owner?.lowercase() == userAddress?.lowercase()) {
                         IconButton(onClick = onEdit) {
                             Icon(Icons.Filled.Edit, contentDescription = "Edit Tanaman", tint = Color.Blue)
                         }

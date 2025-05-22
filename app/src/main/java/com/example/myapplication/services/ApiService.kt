@@ -14,6 +14,7 @@ import com.example.myapplication.data.DataClassResponses.LogoutResponse
 import com.example.myapplication.data.DataClassResponses.RatePlantRequest
 import com.example.myapplication.data.DataClassResponses.RatePlantResponse
 import com.example.myapplication.data.DataClassResponses.RegisterResponse
+import com.example.myapplication.data.DataClassResponses.PublicResponse
 import com.example.myapplication.data.DataClassResponses.SimpleResponse
 import com.example.myapplication.data.DataClassResponses.UserInfoResponse
 import com.example.myapplication.data.IPFSResponse
@@ -49,6 +50,12 @@ interface ApiService {
         @Body request: AddPlantRequest
     ): AddPlantResponse
 
+    @POST("plants/syncPublic")
+    suspend fun syncPlantToPublic(
+        @Header("Authorization") token: String,
+        @Body plantId: String
+    ): PublicResponse
+
     @PUT("plants/edit/{plantId}")
     suspend fun editPlant(
         @Header("Authorization") token: String,
@@ -56,11 +63,11 @@ interface ApiService {
         @Body request: EditPlantRequest
     ): EditPlantResponse
 
-    @GET("plants/all")
-    suspend fun getPaginatedPlants(
-        @Query("page") page: Int,
-        @Query("limit") limit: Int = 10
-    ): PaginatedPlantResponse
+        @GET("plants/all")
+        suspend fun getPaginatedPlants(
+            @Query("page") page: Int,
+            @Query("limit") limit: Int = 10
+        ): PaginatedPlantResponse
 
     @GET("plants/{plantId}")
     suspend fun getPlantById(

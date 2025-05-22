@@ -49,7 +49,7 @@ fun Home(
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
-        viewModel.fetchPlantsByPage(1)
+        viewModel.fetchPlantsByPage(currentPage)
     }
 
     Column(

@@ -73,6 +73,12 @@ class DataClassResponses {
         @SerializedName("ipfsHash") val ipfsHash: String
     )
 
+    data class PublicResponse(
+        @SerializedName("success") val success: Boolean,
+        @SerializedName("message") val message: String,
+        @SerializedName("publicTx") val publicTx: String? // Add publicTx to capture the transaction hash
+    )
+
     // Data Class untuk EditPlant Response
     data class EditPlantResponse(
         @SerializedName("success") val success: Boolean,
