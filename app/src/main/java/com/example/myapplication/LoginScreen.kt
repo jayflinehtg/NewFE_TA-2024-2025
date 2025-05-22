@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,10 +20,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.myapplication.data.DataClassResponses
 import com.example.myapplication.data.DataClassResponses.LoginResponse
 import com.example.myapplication.data.LoginRequest
 import com.example.myapplication.data.PreferencesHelper
 import com.example.myapplication.services.RetrofitClient
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -39,10 +42,11 @@ fun LoginScreen(
 
     var password by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf<String?>(null) }
+    var generalError by remember { mutableStateOf<String?>(null) }
 
-    // Jika tidak ada walletAddress, navigasikan kembali ke WalletComponent
     LaunchedEffect(walletAddress) {
         if (walletAddress.isNullOrEmpty()) {
+            Toast.makeText(context, "Wallet address tidak ditemukan, mohon hubungkan wallet Anda.", Toast.LENGTH_LONG).show()
             navController.navigate("walletComponent") {
                 popUpTo("login") { inclusive = true }
             }
@@ -62,7 +66,6 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .padding(top = 40.dp)
         ) {
-            // LOGO
             Image(
                 painter = painterResource(id = R.drawable.plant),
                 contentDescription = "Logo Tanaman",
@@ -101,7 +104,8 @@ fun LoginScreen(
                         value = password,
                         onValueChange = {
                             password = it
-                            passwordError = null
+                            if (passwordError != null) passwordError = null
+                            if (generalError != null) generalError = null
                         },
                         label = { Text("Kata Sandi", color = Color.Black) },
                         placeholder = { Text("Masukkan Kata Sandi") },
@@ -110,12 +114,13 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp),
-                        isError = passwordError != null,
+                        isError = passwordError != null || generalError != null,
                         colors = TextFieldDefaults.colors(
                             unfocusedContainerColor = Color.White,
                             focusedContainerColor = Color.White,
                             disabledContainerColor = Color.White,
-                            errorContainerColor = Color.White
+                            errorContainerColor = Color.White,
+                            errorTextColor = Color.Red,
                         )
                     )
                     if (passwordError != null) {
@@ -127,47 +132,86 @@ fun LoginScreen(
                         )
                     }
 
+                    if (generalError != null) {
+                        Text(
+                            text = generalError!!,
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
+                    }
+
+
                     Spacer(modifier = Modifier.height(30.dp))
 
                     // Login Button
                     Button(
                         onClick = {
-                            if (password.isEmpty()) {
-                                passwordError = "Password tidak boleh kosong"
+                            passwordError = null
+                            generalError = null
+
+                            if (password.isBlank()) {
+                                passwordError = "Kata sandi tidak boleh kosong."
                                 return@Button
                             }
 
-                            // Pastikan walletAddress tidak null
-                            if (walletAddress != null) {
-                                // Buat objek UserLogin untuk mengirim login request
-                                val userLogin = LoginRequest(walletAddress, password)
-
-                                Log.d("Login", "Wallet Address: $walletAddress, Password: $password")
-
-                                // Panggil API untuk login
-                                RetrofitClient.apiService.loginUser(userLogin).enqueue(object : Callback<LoginResponse> {
-                                    override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
-                                        if (response.isSuccessful) {
-                                            Log.d("API", "Login Success: ${response.body()?.message}")
-                                            // Menyimpan token JWT ke PreferencesHelper atau penyimpanan lokal
-                                            val token = response.body()?.token ?: ""
-                                            PreferencesHelper.saveJwtToken(context, token)
-
-                                            // Menavigasi ke Home screen setelah berhasil login
-                                            onLoginSuccess()
-                                            navController.navigate("home") {
-                                                popUpTo("login") { inclusive = true }
-                                            }
-                                        } else {
-                                            Log.d("API", "Login Failed: ${response.errorBody()?.string()}")
-                                        }
-                                    }
-
-                                    override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                                        Log.d("API", "Error: ${t.message}")
-                                    }
-                                })
+                            // Pindahkan validasi walletAddress ke awal
+                            if (walletAddress.isNullOrEmpty()) {
+                                Toast.makeText(context, "Wallet address tidak ditemukan. Silahkan hubungkan wallet Anda terlebih dahulu.", Toast.LENGTH_LONG).show()
+                                navController.navigate("walletComponent") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                                return@Button
                             }
+
+                            val userLogin = LoginRequest(walletAddress, password)
+                            Log.d("Login", "Wallet Address: $walletAddress, Password: $password")
+
+                            RetrofitClient.apiService.loginUser(userLogin).enqueue(object : Callback<LoginResponse> {
+                                override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                                    if (response.isSuccessful) {
+                                        Log.d("API", "Login Success: ${response.body()?.message}")
+                                        val token = response.body()?.token ?: ""
+                                        PreferencesHelper.saveJwtToken(context, token)
+                                        Toast.makeText(context, "Berhasil masuk!", Toast.LENGTH_SHORT).show()
+                                        onLoginSuccess()
+                                        navController.navigate("home") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    } else {
+                                        val errorBodyString = response.errorBody()?.string()
+                                        Log.e("API", "Login Failed: ${response.code()} - $errorBodyString")
+
+                                        var displayErrorMessage = "Terjadi kesalahan saat masuk."
+                                        try {
+                                            val errorJson = JSONObject(errorBodyString)
+                                            val backendMessage = errorJson.optString("message", "unknown_error")
+
+                                            if (backendMessage == "Login gagal: Password salah") {
+                                                displayErrorMessage = "Kredensial yang diinput tidak valid."
+                                                generalError = displayErrorMessage
+                                            } else if (backendMessage.contains("Login gagal: User not registered", ignoreCase = true)) { // Contoh: Jika backend Anda mengirim ini
+                                                displayErrorMessage = "Akun tidak terdaftar. Silahkan daftar."
+                                                generalError = displayErrorMessage
+                                            }
+                                            else {
+                                                displayErrorMessage = backendMessage
+                                                generalError = displayErrorMessage
+                                            }
+                                        } catch (e: Exception) {
+                                            Log.e("API", "Error parsing error body: ${e.message}")
+                                            generalError = "Kredensial yang diinput tidak valid."
+                                        }
+                                        Toast.makeText(context, displayErrorMessage, Toast.LENGTH_LONG).show()
+                                    }
+                                }
+
+                                override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                                    Log.e("API", "Error: ${t.message}", t)
+                                    generalError = "Tidak dapat terhubung ke server."
+                                    Toast.makeText(context, "Koneksi gagal: ${t.message}", Toast.LENGTH_LONG).show()
+                                }
+                            })
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = colorResource(id = R.color.dark_green)),
                         shape = RoundedCornerShape(50),
@@ -176,7 +220,6 @@ fun LoginScreen(
                         Text("Masuk", fontSize = 14.sp, color = Color.White)
                     }
 
-                    // Link ke Register
                     TextButton(onClick = onNavigateToRegister) {
                         Text(
                             "Belum memiliki akun? Daftar disini",

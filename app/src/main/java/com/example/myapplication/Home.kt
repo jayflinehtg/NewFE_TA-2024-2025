@@ -171,7 +171,7 @@ fun Home(
 
         if (ratedPlantList.isEmpty()) {
             Text(
-                "Tidak ditemukan tanaman sesuai pencarian.",
+                "Tanaman tidak ditemukan.",
                 color = Color.Gray,
                 modifier = Modifier
                     .padding(top = 32.dp)

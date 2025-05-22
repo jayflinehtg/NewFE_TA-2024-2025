@@ -37,7 +37,7 @@ internal object AppModule {
         // Pilih jaringan yang digunakan di sini, tinggal uncomment yang digunakan
         val readonlyRPCMap = mapOf(
             // Ganache
-            "Ganache" to "http://192.168.50.94:7545" // RPC URL untuk Ganache
+            "Ganache" to "http://192.168.1.104:7545" // RPC URL untuk Ganache
             // Tea-Sepolia
             // "Tea-Sepolia" to RetrofitClient.ETH_RPC_URL // RPC URL untuk Tea-Sepolia
         )

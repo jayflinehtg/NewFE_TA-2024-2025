@@ -175,7 +175,7 @@ fun AddPlant(
                                 val contentResolver = context.contentResolver
                                 val mimeType = contentResolver.getType(uri)
 
-                                // Validasi MIME type, hanya gambar yang diperbolehkan
+                                // Validasi MIME hanya gambar yang diperbolehkan
                                 if (mimeType?.startsWith("image/") != true) {
                                     Toast.makeText(context, "Tipe file tidak valid, hanya gambar yang diperbolehkan", Toast.LENGTH_SHORT).show()
                                     return@let null // Kembalikan null jika file bukan gambar
@@ -231,10 +231,10 @@ fun AddPlant(
                                         response.body()?.let { ipfsResponse ->
                                             val newCid = ipfsResponse.cid
                                             viewModel.setCid(newCid)  // Menyimpan CID ke ViewModel
-                                            Toast.makeText(context, "CID: $newCid", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(context, "Gambar berhasil diupload!", Toast.LENGTH_SHORT).show()
                                         }
                                     } else {
-                                        Toast.makeText(context, "Gagal upload ke IPFS", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Gagal mengunggah gambar ke IPFS", Toast.LENGTH_SHORT).show()
                                     }
                                     file.delete()
                                 }
