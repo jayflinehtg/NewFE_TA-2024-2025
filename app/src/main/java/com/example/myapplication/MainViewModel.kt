@@ -17,6 +17,7 @@ import io.metamask.androidsdk.EthereumRequest
 import io.metamask.androidsdk.Result
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -75,7 +76,7 @@ class MainViewModel @Inject constructor(
 
     fun fetchUserDataFromPrefs() {
         val walletAddress = PreferencesHelper.getWalletAddress(context)
-        val isLoggedIn = PreferencesHelper.getJwtToken(context) != null
+        val isLoggedInLocal = PreferencesHelper.getJwtToken(context) != null
 
         walletAddress?.let {
             viewModelScope.launch {
@@ -83,23 +84,26 @@ class MainViewModel @Inject constructor(
                     val response = apiService.getUserInfo(it)
                     Log.d("MainViewModel", "User Info Response: $response")
                     val fetchedFullName = response.userData.fullName
+                    val isLoggedInFromApi = response.userData.isLoggedIn
+
                     _uiState.update { state ->
                         state.copy(
                             fullName = fetchedFullName ?: state.fullName ?: "Nama Pengguna",
-                            isLoggedIn = response.userData.isLoggedIn
+                            isLoggedIn = isLoggedInFromApi ?: isLoggedInLocal
                         )
                     }
-                    fetchedFullName?.let {
-                        PreferencesHelper.saveUserFullName(context, it)
+                    fetchedFullName?.let { name ->
+                        PreferencesHelper.saveUserFullName(context, name)
                     }
                 } catch (e: Exception) {
                     Log.e("MainViewModel", "Error fetching user info: ${e.message}")
                     // Jika gagal, tetap gunakan fullName dari PreferencesHelper
                     val savedFullName = PreferencesHelper.getUserFullName(context) ?: "Nama Pengguna"
+                    // Pertahankan status login terakhir di state, jangan reset ke local
                     _uiState.update { state ->
                         state.copy(
                             fullName = savedFullName,
-                            isLoggedIn = isLoggedIn
+                            isLoggedIn = state.isLoggedIn
                         )
                     }
                 }
@@ -110,7 +114,7 @@ class MainViewModel @Inject constructor(
             _uiState.update { state ->
                 state.copy(
                     fullName = savedFullName,
-                    isLoggedIn = isLoggedIn
+                    isLoggedIn = false // Tidak ada wallet, berarti tidak login
                 )
             }
         }
@@ -143,6 +147,7 @@ class MainViewModel @Inject constructor(
                             walletAddress = null,
                             fullName = null,
                             isGuest = false,
+                            isLoggedIn = false,
                             message = "Berhasil keluar."
                         )
                     }
@@ -264,6 +269,8 @@ class MainViewModel @Inject constructor(
             logout()
             eventSink(EventSink.Disconnect)
             Log.d("Logout And Disconnect", "Proses Logout telah berhasil")
+            delay(2000)
+            fetchUserDataFromPrefs()
             _uiEvent.emit(UiEvent.NavigateTo("walletComponent"))
             Log.d("MainViewModel", "Navigasi ke WalletComponent dipicu")
         }

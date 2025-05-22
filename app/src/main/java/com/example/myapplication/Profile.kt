@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.EventSink
 import com.example.myapplication.data.PreferencesHelper
+import com.example.myapplication.data.UiEvent
 
 @Composable
 fun Profile(navController: NavController) {
@@ -27,11 +28,22 @@ fun Profile(navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val walletAddress = PreferencesHelper.getWalletAddress(context).orEmpty()
-    val isLoggedIn = PreferencesHelper.getJwtToken(context) != null // Cek apakah user sudah logout atau belum
+    val isLoggedIn = uiState.isLoggedIn
 
-    // Ambil data user dari PreferencesHelper saat composable dibuat
+    // Event handler navigasi dari ViewModel
     LaunchedEffect(Unit) {
-        viewModel.fetchUserDataFromPrefs()
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is UiEvent.NavigateTo -> {
+                    navController.navigate(event.route) {
+                        popUpTo("profile") { inclusive = true }
+                    }
+                }
+                is UiEvent.Message -> {
+                    // Tampilkan snackbar atau toast jika perlu
+                }
+            }
+        }
     }
 
     Column(
@@ -49,30 +61,25 @@ fun Profile(navController: NavController) {
             color = colorResource(id = R.color.dark_green),
             modifier = Modifier.padding(bottom = 16.dp)
         )
-
         Text(
             text = "Public Key",
             fontSize = 14.sp,
             color = Color.Gray,
             modifier = Modifier.padding(bottom = 6.dp)
         )
-
         Text(
             text = walletAddress,
             fontSize = 16.sp,
             color = Color.Gray,
             modifier = Modifier.padding(bottom = 24.dp)
         )
-
-        // Tampilkan saldo jika tersedia
         Text(
-            text = "Balance: ${uiState.balance ?: "NA"}", // Menampilkan saldo jika tersedia
+            text = "Balance: ${uiState.balance ?: "NA"}",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             color = Color.Black,
             modifier = Modifier.padding(bottom = 24.dp)
         )
-
         Text(
             text = if (isLoggedIn) "Logged In" else "Logged Out",
             fontSize = 16.sp,
@@ -80,8 +87,6 @@ fun Profile(navController: NavController) {
             color = if (isLoggedIn) Color.Green else Color.Red,
             modifier = Modifier.padding(bottom = 24.dp)
         )
-
-        // Jika user tidak login, tampilkan pesan untuk menghubungkan wallet
         if (!isLoggedIn) {
             Text(
                 text = "Silahkan hubungkan ulang wallet Anda",
@@ -90,24 +95,24 @@ fun Profile(navController: NavController) {
                 modifier = Modifier.padding(bottom = 24.dp)
             )
         }
-
-        // Tombol Keluar
         Button(
-            onClick = {
-                viewModel.logoutAndDisconnect() },
+            onClick = { viewModel.logoutAndDisconnect() },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
             shape = RoundedCornerShape(50),
-            modifier = Modifier.fillMaxWidth(0.6f)
+            modifier = Modifier.fillMaxWidth(0.6f),
+            enabled = isLoggedIn
         ) {
             Text("Keluar", fontSize = 14.sp, color = Color.White)
         }
-
-        // Tampilkan pesan jika ada
         uiState.message?.let { message ->
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = message,
-                color = if (message.contains("Berhasil", ignoreCase = true)) Color.Green else Color.Red,
+                color = when {
+                    message.contains("Berhasil", ignoreCase = true) -> Color.Green
+                    message.contains("Gagal", ignoreCase = true) -> Color.Red
+                    else -> Color.Gray
+                },
                 fontSize = 14.sp
             )
         }
