@@ -67,7 +67,7 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             when (eventSink) {
                 EventSink.Connect -> connectWallet()
-                EventSink.GetBalance -> updateBalance()
+//                EventSink.GetBalance -> updateBalance()
                 EventSink.Disconnect -> disconnectWallet()
                 EventSink.GuestLogin -> handleGuestLogin()
             }
@@ -179,14 +179,14 @@ class MainViewModel @Inject constructor(
                         PreferencesHelper.saveWalletAddress(context, address)
 
                         // Memperbarui UI state dengan informasi terbaru
-                        val balance = updateBalance()
+//                        val balance = updateBalance()
                         _uiState.update {
                             it.copy(
                                 walletAddress = address,
                                 isConnecting = false,
                                 shouldShowWalletConnect = false,
                                 isGuest = false,
-                                balance = balance.toString()
+//                                balance = balance.toString()
                             )
                         }
 
@@ -208,50 +208,50 @@ class MainViewModel @Inject constructor(
     }
 
 
-    private fun updateBalance() {
-        if (ethereum.selectedAddress.isNotEmpty()) {
-            viewModelScope.launch {
-                val balanceResult = ethereum.sendRequest(
-                    EthereumRequest(
-                        method = EthereumMethod.ETH_GET_BALANCE.value,
-                        params = listOf(ethereum.selectedAddress, "latest")
-                    )
-                )
-                when (balanceResult) {
-                    is Result.Success.Item -> {
-                        // Menghapus prefix '0x' dan mengonversi hex ke BigInteger
-                        val cleanHexString = if (balanceResult.value.startsWith("0x")) {
-                            balanceResult.value.substring(2)
-                        } else {
-                            balanceResult.value
-                        }
-
-                        // Mengonversi hex menjadi BigInteger, lalu ke jumlah ETH
-                        try {
-                            val balanceInWei = BigInteger(cleanHexString, 16) // Mengambil saldo dalam wei
-                            val balanceInEth = balanceInWei.divide(BigInteger.TEN.pow(18)) // Mengonversi ke ETH
-                            _uiState.update {
-                                it.copy(balance = "$balanceInEth ETH") // Menampilkan saldo dalam ETH
-                            }
-                        } catch (e: Exception) {
-                            showMessage("Gagal mengonversi saldo: ${e.message}")
-                        }
-                    }
-                    is Result.Error -> showMessage(balanceResult.error.message)
-                    else -> _uiState.update { it.copy(balance = "NA") }
-                }
-            }
-        } else {
-            showMessage("Dompet belum terhubung!")
-        }
-    }
+//    private fun updateBalance() {
+//        if (ethereum.selectedAddress.isNotEmpty()) {
+//            viewModelScope.launch {
+//                val balanceResult = ethereum.sendRequest(
+//                    EthereumRequest(
+//                        method = EthereumMethod.ETH_GET_BALANCE.value,
+//                        params = listOf(ethereum.selectedAddress, "latest")
+//                    )
+//                )
+//                when (balanceResult) {
+//                    is Result.Success.Item -> {
+//                        // Menghapus prefix '0x' dan mengonversi hex ke BigInteger
+//                        val cleanHexString = if (balanceResult.value.startsWith("0x")) {
+//                            balanceResult.value.substring(2)
+//                        } else {
+//                            balanceResult.value
+//                        }
+//
+//                        // Mengonversi hex menjadi BigInteger, lalu ke jumlah ETH
+//                        try {
+//                            val balanceInWei = BigInteger(cleanHexString, 16) // Mengambil saldo dalam wei
+//                            val balanceInEth = balanceInWei.divide(BigInteger.TEN.pow(18)) // Mengonversi ke ETH
+//                            _uiState.update {
+//                                it.copy(balance = "$balanceInEth ETH") // Menampilkan saldo dalam ETH
+//                            }
+//                        } catch (e: Exception) {
+//                            showMessage("Gagal mengonversi saldo: ${e.message}")
+//                        }
+//                    }
+//                    is Result.Error -> showMessage(balanceResult.error.message)
+//                    else -> _uiState.update { it.copy(balance = "NA") }
+//                }
+//            }
+//        } else {
+//            showMessage("Dompet belum terhubung!")
+//        }
+//    }
 
     private fun disconnectWallet() {
         _uiState.update {
             it.copy(
                 walletAddress = null,
                 isConnecting = false,
-                balance = null,
+//                balance = null,
                 shouldShowWalletConnect = true,
                 fullName = null
             )
@@ -282,7 +282,7 @@ class MainViewModel @Inject constructor(
                 walletAddress = "",
                 isConnecting = false,
                 shouldShowWalletConnect = false,
-                balance = "Guest",
+//                balance = "Guest",
                 isGuest = true,
                 fullName = "Tamu"
             )
@@ -323,7 +323,7 @@ class MainViewModel @Inject constructor(
                         isConnecting = true
                     )
                 }
-                updateBalance()
+//                updateBalance()
                 fetchUserDataFromPrefs()
             }
         }

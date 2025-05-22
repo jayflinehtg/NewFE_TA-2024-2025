@@ -77,7 +77,7 @@ class MainActivity : ComponentActivity() {
                     composable(Screen.WalletComponent.route) {
                         WalletComponent(
                             isConnecting = state.isConnecting,
-                            balance = state.balance,
+//                            balance = state.balance,
                             isGuest = state.isGuest,
                             eventSink = { event -> viewModel.eventSink(event) }
                         )

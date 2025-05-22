@@ -74,13 +74,6 @@ fun Profile(navController: NavController) {
             modifier = Modifier.padding(bottom = 24.dp)
         )
         Text(
-            text = "Balance: ${uiState.balance ?: "NA"}",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-        Text(
             text = if (isLoggedIn) "Logged In" else "Logged Out",
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,

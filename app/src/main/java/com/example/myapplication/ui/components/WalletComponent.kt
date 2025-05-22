@@ -16,7 +16,7 @@ import com.example.myapplication.data.EventSink
 @Composable
 fun WalletComponent(
     isConnecting: Boolean,
-    balance: String?,
+//    balance: String?,
     isGuest: Boolean,
     eventSink: (EventSink) -> Unit
 ) {
@@ -74,17 +74,6 @@ fun WalletComponent(
                                 .fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )
-                    } else {
-                        // Jika wallet berhasil terhubung, tampilkan saldo
-                        if (isConnecting && balance != null) {
-                            Text(
-                                text = "Saldo: $balance",
-                                fontSize = 16.sp,
-                                color = Color.DarkGray
-                            )
-
-                            Spacer(modifier = Modifier.height(20.dp))
-                        }
                     }
 
                     // Tombol Connect atau GuestLogin berdasarkan status isGuest
