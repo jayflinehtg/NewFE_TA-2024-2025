@@ -42,6 +42,7 @@ import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPlant(
     navController: NavController,

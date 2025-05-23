@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screen
+package com.example.myapplication
 
 import android.net.Uri
 import android.widget.Toast

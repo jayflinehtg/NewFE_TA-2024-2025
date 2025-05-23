@@ -96,7 +96,7 @@ fun WalletComponent(
                             modifier = Modifier.fillMaxWidth(0.8f)
                         ) {
                             if (isConnecting) {
-                                CircularProgressIndicator(color = Color.White)
+                                CircularProgressIndicator(color = Color(0xFF2E7D32))
                             } else {
                                 Text("Connect Wallet", fontSize = 14.sp, color = Color.White)
                             }

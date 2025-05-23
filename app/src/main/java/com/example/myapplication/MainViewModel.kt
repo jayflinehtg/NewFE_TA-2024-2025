@@ -20,11 +20,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.myapplication.Screen
 import java.math.BigInteger
 import javax.inject.Inject
 
@@ -52,6 +54,9 @@ class MainViewModel @Inject constructor(
         ).copy(fullName = PreferencesHelper.getUserFullName(context) ?: "")
     )
     val uiState = _uiState.asStateFlow()
+
+    private val _startRoute = MutableStateFlow<String?>(null)
+    val startRoute: StateFlow<String?> = _startRoute.asStateFlow()
 
     private fun showMessage(message: String) {
         viewModelScope.launch {
@@ -207,7 +212,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-
 //    private fun updateBalance() {
 //        if (ethereum.selectedAddress.isNotEmpty()) {
 //            viewModelScope.launch {
@@ -253,7 +257,8 @@ class MainViewModel @Inject constructor(
                 isConnecting = false,
 //                balance = null,
                 shouldShowWalletConnect = true,
-                fullName = null
+                fullName = null,
+                isLoggedIn = false
             )
         }
         ethereum.disconnect(true)
@@ -284,7 +289,8 @@ class MainViewModel @Inject constructor(
                 shouldShowWalletConnect = false,
 //                balance = "Guest",
                 isGuest = true,
-                fullName = "Tamu"
+                fullName = "Tamu",
+                isLoggedIn = false
             )
         }
         PreferencesHelper.saveMetaMaskConnectionStatus(context, false)
@@ -292,7 +298,7 @@ class MainViewModel @Inject constructor(
         PreferencesHelper.saveUserFullName(context, "Tamu")
         showMessage("Masuk sebagai Tamu")
         viewModelScope.launch {
-            _uiEvent.emit(UiEvent.NavigateTo("home"))
+            _uiEvent.emit(UiEvent.NavigateTo(Screen.Home.route))
         }
     }
 
@@ -307,10 +313,34 @@ class MainViewModel @Inject constructor(
     }
 
     init {
-        initializeConnection()
-        if (PreferencesHelper.isMetaMaskConnected(context) && !PreferencesHelper.getWalletAddress(context).isNullOrEmpty()) {
-            fetchUserDataFromPrefs()
+        // Tentukan rute awal saat ViewModel diinisialisasi
+        val jwtToken = PreferencesHelper.getJwtToken(context)
+        val isWalletConnected = PreferencesHelper.isMetaMaskConnected(context)
+        val walletAddress = PreferencesHelper.getWalletAddress(context)
+        val isGuest = PreferencesHelper.getUserFullName(context) == "Tamu" // Cek jika sebelumnya login sebagai tamu
+
+        if (jwtToken != null && jwtToken.isNotEmpty()) {
+            // Jika ada token, user dianggap sudah login, navigasi ke Home
+            _startRoute.value = Screen.Home.route
+            // Jika ada token, fetch data user untuk update UI state
+            if (!walletAddress.isNullOrEmpty()) {
+                fetchUserDataFromPrefs()
+            } else {
+                // Case jika ada token tapi tidak ada wallet address, anggap login tapi tidak terkoneksi dompet
+                _uiState.update { it.copy(isLoggedIn = true, fullName = PreferencesHelper.getUserFullName(context) ?: "Nama Pengguna") }
+            }
+        } else if (isGuest) {
+            // Jika sebelumnya login sebagai tamu
+            _startRoute.value = Screen.Home.route
+            _uiState.update { it.copy(isGuest = true, fullName = "Tamu") }
+        } else {
+            // Default, ke WalletComponent jika tidak ada token atau bukan tamu
+            _startRoute.value = Screen.WalletComponent.route
         }
+        Log.d("MainViewModel", "Initial startRoute: ${_startRoute.value}")
+
+        // Inisialisasi koneksi MetaMask (jika perlu)
+        initializeConnection()
     }
 
     private fun initializeConnection() {
@@ -320,11 +350,13 @@ class MainViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         walletAddress = savedAddress,
-                        isConnecting = true
+                        isConnecting = false // Set isConnecting ke false setelah init
                     )
                 }
-//                updateBalance()
-                fetchUserDataFromPrefs()
+                fetchUserDataFromPrefs() // Pastikan data user diambil jika sudah terhubung
+            } else {
+                // Pastikan status connecting direset jika tidak terkoneksi
+                _uiState.update { it.copy(isConnecting = false) }
             }
         }
     }
