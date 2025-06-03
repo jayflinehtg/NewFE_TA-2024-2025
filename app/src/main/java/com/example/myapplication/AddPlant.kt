@@ -150,6 +150,8 @@ fun AddPlant(
                 }
 
                 // Button Konfirmasi
+                val minSizeInBytes = 150 * 1024 // Minimal 150 kb
+                val maxSizeInBytes = 2 * 1024 * 1024 // Maksimal 2 MB
                 Button(
                     onClick = {
                         if (gambarUri == null) {
@@ -169,7 +171,6 @@ fun AddPlant(
                         // Tambahkan log untuk melihat JWT Token
                         Log.d("AddIPFS", "JWT Token: $jwtToken")
 
-                        val maxSizeInBytes = 5 * 1024 * 1024 // 5 MB dalam byte
                         val tempFile = gambarUri?.let { uri ->
                             try {
                                 val contentResolver = context.contentResolver
@@ -192,9 +193,19 @@ fun AddPlant(
                                 }
 
                                 // Mengecek ukuran file
-                                if (tempFile.length() > maxSizeInBytes) {
+                                val fileSize = tempFile.length()
+
+                                // Validasi ukuran file minimal 150KB
+                                if (fileSize < minSizeInBytes) {
+                                    Log.e("AddIPFS", "File terlalu kecil, minimal 150KB")
+                                    Toast.makeText(context, "Gambar yang anda upload terlalu kecil, minimal 150KB", Toast.LENGTH_SHORT).show()
+                                    return@let null // Kembalikan null jika file terlalu kecil
+                                }
+
+                                // Mengecek ukuran file maksimal 5MB
+                                if (fileSize > maxSizeInBytes) {
                                     Log.e("AddIPFS", "File terlalu besar, maksimal 5MB")
-                                    Toast.makeText(context, "File terlalu besar, maksimal 5MB", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Gambar yang anda upload terlalu besar, maksimal 5MB", Toast.LENGTH_SHORT).show()
                                     return@let null // Kembalikan null jika file terlalu besar
                                 } else {
                                     Log.d("AddIPFS", "File berhasil dibuat: ${tempFile.absolutePath}")

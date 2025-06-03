@@ -107,7 +107,7 @@ fun RegisterScreen(
                         onValueChange = {
                             fullName = it
                             if (fullNameError != null) fullNameError = null
-                            if (generalError != null) generalError = null // <-- Tambahkan ini
+                            if (generalError != null) generalError = null
                         },
                         label = { Text("Nama Lengkap", style = TextStyle(color = Color.Black)) },
                         placeholder = { Text("Masukkan Nama Lengkap", style = TextStyle(color = Color.Gray)) },
@@ -115,7 +115,7 @@ fun RegisterScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
-                        isError = fullNameError != null || generalError != null, // <-- Perbaiki ini
+                        isError = fullNameError != null || generalError != null,
                         colors = TextFieldDefaults.colors(
                             unfocusedContainerColor = Color.White,
                             focusedContainerColor = Color.White,
@@ -141,7 +141,7 @@ fun RegisterScreen(
                         onValueChange = {
                             password = it
                             if (passwordError != null) passwordError = null
-                            if (generalError != null) generalError = null // <-- Tambahkan ini
+                            if (generalError != null) generalError = null
                         },
                         label = { Text("Kata Sandi", style = TextStyle(color = Color.Black)) },
                         placeholder = { Text("Masukkan Kata Sandi", style = TextStyle(color = Color.Gray)) },
@@ -150,7 +150,7 @@ fun RegisterScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
-                        isError = passwordError != null || generalError != null, // <-- Perbaiki ini
+                        isError = passwordError != null || generalError != null,
                         colors = TextFieldDefaults.colors(
                             unfocusedContainerColor = Color.White,
                             focusedContainerColor = Color.White,
@@ -184,24 +184,25 @@ fun RegisterScreen(
                         onClick = {
                             fullNameError = null
                             passwordError = null
-                            generalError = null // <-- Tambahkan ini
+                            generalError = null
 
                             if (fullName.isBlank()) {
                                 fullNameError = "Nama lengkap tidak boleh kosong."
-                                return@Button
                             }
 
                             if (password.isBlank()) {
                                 passwordError = "Kata sandi tidak boleh kosong."
-                                return@Button
-                            }
-                            if (password.length < 6) {
+                            } else if (password.length < 6) {
                                 passwordError = "Kata sandi minimal 6 karakter."
-                                return@Button
+                            } else {
+                                val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+\$")
+                                if (!password.matches(passwordRegex)) {
+                                    passwordError = "Kata sandi harus mengandung minimal satu huruf besar, satu huruf kecil, dan satu angka."
+                                }
                             }
-                            val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+\$")
-                            if (!password.matches(passwordRegex)) {
-                                passwordError = "Kata sandi harus mengandung minimal satu huruf besar, satu huruf kecil, dan satu angka."
+
+                            // Cek apakah ada error di kedua field
+                            if (fullNameError != null || passwordError != null) {
                                 return@Button
                             }
 
@@ -218,7 +219,7 @@ fun RegisterScreen(
                             Log.d("Password", "Password yang dikirim: $password")
 
                             // Buat objek user dengan walletAddress yang diterima
-                            val user = User(fullName, currentWalletAddress, password) // <-- Perbaiki ini
+                            val user = User(fullName, currentWalletAddress, password)
 
                             Log.d("WalletAddress", "Wallet Address: $currentWalletAddress")
 
@@ -228,7 +229,7 @@ fun RegisterScreen(
                                     if (response.isSuccessful) {
                                         Log.d("API", "Register Success: ${response.body()?.txHash}")
                                         Toast.makeText(context, "Registrasi berhasil!", Toast.LENGTH_SHORT).show()
-                                        onRegisterSuccess(currentWalletAddress) // <-- Perbaiki ini
+                                        onRegisterSuccess(currentWalletAddress)
                                         navController.navigate("login") {
                                             popUpTo("register") { inclusive = true }
                                         }

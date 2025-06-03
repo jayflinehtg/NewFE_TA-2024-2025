@@ -140,18 +140,11 @@ fun DetailScreen(
                         },
                         onError = { errorMessage ->
                             scope.launch {
-                                val message = when {
-                                    errorMessage.contains("rating", ignoreCase = true) -> {
-                                        "Rating berhasil diperbarui!"
-                                    }
-                                    errorMessage.contains("login", ignoreCase = true) -> {
-                                        "Harap login terlebih dahulu untuk memberikan rating."
-                                    }
-                                    else -> {
-                                        "Terjadi kesalahan, coba lagi nanti."
-                                    }
+                                if (errorMessage.contains("login", ignoreCase = true)) {
+                                    snackbarHostState.showSnackbar("Harap login terlebih dahulu untuk memberikan rating.")
+                                } else {
+                                    snackbarHostState.showSnackbar("Terjadi kesalahan, coba lagi nanti.")
                                 }
-                                snackbarHostState.showSnackbar(message)
                             }
                         }
                     )

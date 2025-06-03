@@ -363,6 +363,16 @@ class PlantViewModel @Inject constructor(
                         val ratingResponse = apiService.getAverageRating(plantId)
                         _selectedRating.value = ratingResponse.averageRating.toDoubleOrNull() ?: 0.0
 
+                        // Update ratedPlantList
+                        _ratedPlantList.value = _ratedPlantList.value.map { ratedPlant ->
+                            if (ratedPlant.plant.id == plantId) {
+                                // Update rated plant dengan rating terbaru
+                                ratedPlant.copy(averageRating = _selectedRating.value)
+                            } else {
+                                ratedPlant
+                            }
+                        }
+
                         onSuccess(response.txHash ?: "Berhasil memberi rating.")
                     } catch (e: Exception) {
                         Log.e("RatePlant", "Error refreshing data: ${e.message}")
