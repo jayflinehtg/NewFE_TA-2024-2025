@@ -11,7 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.rounded.Park
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,6 +33,7 @@ import androidx.navigation.NavController
 import com.example.myapplication.data.PlantResponse
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(
     navController: NavController,
@@ -181,7 +182,7 @@ fun Home(
         } else {
             LazyColumn {
                 items(ratedPlantList) { ratedPlant ->
-                    PlantCard(ratedPlant.plant, ratedPlant.averageRating, navController)
+                    PlantCard(ratedPlant.plant, ratedPlant.averageRating, ratedPlant.plant.likeCount.toInt(), navController)
                 }
             }
         }
@@ -189,7 +190,7 @@ fun Home(
 }
 
 @Composable
-fun PlantCard(plant: PlantResponse, averageRating: Double, navController: NavController) {
+fun PlantCard(plant: PlantResponse, averageRating: Double, likesCount: Int, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -204,14 +205,6 @@ fun PlantCard(plant: PlantResponse, averageRating: Double, navController: NavCon
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Rounded.Park,
-                contentDescription = "Plant Icon",
-                tint = Color(0xFF66BB6A),
-                modifier = Modifier
-                    .size(50.dp)
-                    .padding(end = 12.dp)
-            )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = plant.name,
@@ -220,7 +213,12 @@ fun PlantCard(plant: PlantResponse, averageRating: Double, navController: NavCon
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                StarRating(rating = averageRating)
+                // Row untuk Rating dan Likes
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    StarRating(rating = averageRating)
+                    Spacer(modifier = Modifier.width(16.dp)) // Memberi jarak antara rating dan likes
+                    LikesDisplay(likesCount = likesCount) // Komponen baru untuk menampilkan likes
+                }
             }
             Spacer(modifier = Modifier.width(8.dp))
             Button(
@@ -249,6 +247,24 @@ fun StarRating(rating: Double) {
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = "(${rating.toString().take(3)})",
+            fontSize = 12.sp,
+            color = Color.DarkGray
+        )
+    }
+}
+
+@Composable
+fun LikesDisplay(likesCount: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Default.Favorite, // Ikon hati untuk likes
+            contentDescription = "Likes Count",
+            tint = Color(0xFFE53935), // Warna merah untuk ikon hati
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = likesCount.toString(),
             fontSize = 12.sp,
             color = Color.DarkGray
         )
