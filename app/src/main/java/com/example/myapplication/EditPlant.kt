@@ -1,6 +1,7 @@
 package com.example.myapplication
 
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -246,6 +247,10 @@ fun EditPlantScreen(
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
+
+                    // Button Konfirmasi Gambar
+                    val minSizeInBytes = 150 * 1024 // Minimal 150 KB
+                    val maxSizeInBytes = 2 * 1024 * 1024 // Maksimal 2 MB
                     Button(
                         onClick = {
                             if (gambarUri == null) {
@@ -261,19 +266,44 @@ fun EditPlantScreen(
                                     val contentResolver = context.contentResolver
                                     val inputStream = contentResolver.openInputStream(uri)
                                     val fileName = "uploaded_image_${System.currentTimeMillis()}.jpg"
+                                    val mimeType = contentResolver.getType(uri)
                                     val tempFile = File(context.cacheDir, fileName)
+                                    // Validasi MIME hanya gambar yang diperbolehkan
+                                    if (mimeType?.startsWith("image/") != true) {
+                                        Toast.makeText(context, "Tipe file tidak valid, hanya gambar yang diperbolehkan", Toast.LENGTH_SHORT).show()
+                                        return@let null // Kembalikan null jika file bukan gambar
+                                    }
                                     inputStream?.use { input ->
                                         FileOutputStream(tempFile).use { output ->
                                             input.copyTo(output)
                                         }
                                     }
+
+                                    // Mengecek ukuran file
+                                    val fileSize = tempFile.length()
+
+                                    // Validasi ukuran file minimal 150KB
+                                    if (fileSize < minSizeInBytes) {
+                                        Toast.makeText(context, "Gambar yang anda upload terlalu kecil, minimal 150KB", Toast.LENGTH_SHORT).show()
+                                        return@let null // Kembalikan null jika file terlalu kecil
+                                    }
+
+                                    // Mengecek ukuran file maksimal 2MB
+                                    if (fileSize > maxSizeInBytes) {
+                                        Toast.makeText(context, "Gambar yang anda upload terlalu besar, maksimal 2MB", Toast.LENGTH_SHORT).show()
+                                        return@let null // Kembalikan null jika file terlalu besar
+                                    } else {
+                                        Log.d("AddIPFS", "File berhasil dibuat: ${tempFile.absolutePath}")
+                                    }
                                     tempFile
                                 } catch (e: Exception) {
                                     e.printStackTrace()
+                                    Toast.makeText(context, "Gagal membuat file dari URI", Toast.LENGTH_SHORT).show()
                                     null
                                 }
                             }
 
+                            // Pastikan file tidak null sebelum upload
                             tempFile?.let { file ->
                                 val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
                                 val filePart = MultipartBody.Part.createFormData("file", file.name, requestBody)
