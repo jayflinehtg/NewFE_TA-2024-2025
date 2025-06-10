@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
@@ -91,10 +93,23 @@ fun Home(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
         ) {
+            // Tombol Panah Kiri
+            IconButton(
+                onClick = {
+                    if (currentPage > 1) {
+                        val newPage = currentPage - 1
+                        pageInput = newPage.toString()
+                        viewModel.fetchPlantsByPage(newPage)
+                    }
+                },
+                enabled = currentPage > 1
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Halaman Sebelumnya",
+                    tint = if (currentPage > 1) Color(0xFF4CAF50) else Color.Gray)
+            }
             OutlinedTextField(
                 value = pageInput,
                 onValueChange = { pageInput = it },
@@ -120,6 +135,22 @@ fun Home(
                 modifier = Modifier.padding(start = 4.dp),
                 color = Color.Black
             )
+            // Tombol Panah Kanan
+            IconButton(
+                onClick = {
+                    if (currentPage < totalPages) {
+                        val newPage = currentPage + 1
+                        pageInput = newPage.toString()
+                        viewModel.fetchPlantsByPage(newPage)
+                    }
+                },
+                enabled = currentPage < totalPages
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Halaman Berikutnya",
+                    tint = if (currentPage < totalPages) Color(0xFF4CAF50) else Color.Gray)
+            }
+
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 onClick = {
