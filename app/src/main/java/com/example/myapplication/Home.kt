@@ -127,7 +127,7 @@ fun Home(
                     pageInput = validPage.toString()
                     viewModel.fetchPlantsByPage(validPage)
                 }),
-                modifier = Modifier.width(100.dp)
+                modifier = Modifier.width(80.dp)
             )
             Text(
                 text = "of $totalPages",
