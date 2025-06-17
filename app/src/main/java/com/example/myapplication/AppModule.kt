@@ -32,14 +32,12 @@ internal object AppModule {
     @Provides
     fun provideEthereumFlow(@ApplicationContext context: Context, dappMetadata: DappMetadata): EthereumFlow {
         // Mengambil konfigurasi dari RetrofitClient dan memilih jaringan yang aktif
-        val infuraApiKey = RetrofitClient.ETH_INFURA_API_KEY // Mengambil Infura API Key dari RetrofitClient
+        val infuraApiKey = null // Mengambil Infura API Key dari RetrofitClient
 
         // Pilih jaringan yang digunakan di sini, tinggal uncomment yang digunakan
         val readonlyRPCMap = mapOf(
             // Ganache
-            "Ganache" to "http://192.168.50.94:7545" // RPC URL untuk Ganache
-            // Tea-Sepolia
-            // "Tea-Sepolia" to RetrofitClient.ETH_RPC_URL // RPC URL untuk Tea-Sepolia
+            "Ganache" to "http://192.168.1.100:7545" // RPC URL untuk Ganache
         )
 
         // Membuat SDKOptions dengan Infura API Key dan readonlyRPCMap

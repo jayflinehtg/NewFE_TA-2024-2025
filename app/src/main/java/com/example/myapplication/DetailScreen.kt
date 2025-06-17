@@ -33,11 +33,13 @@ import java.util.*
 import android.graphics.BitmapFactory
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.navigation.NavController
 import com.example.myapplication.data.DataClassResponses
 import com.example.myapplication.services.ApiService
 import kotlinx.coroutines.Dispatchers
@@ -49,7 +51,8 @@ fun DetailScreen(
     plantId: String,
     token: String,
     onBack: () -> Unit,
-    onEdit: () -> Unit, // Fungsi untuk menavigasi ke screen edit
+    onEdit: () -> Unit,
+    navController: NavController,
     viewModel: PlantViewModel = hiltViewModel()
 ) {
     val backgroundColor = Color(0xFFEAF4E9)
@@ -64,7 +67,7 @@ fun DetailScreen(
     val avgRating by viewModel.selectedRating
     val comments by viewModel.plantComments
     val ownerFullName by viewModel.ownerFullName
-    val userAddress by viewModel.userAddress // Ambil userAddress dari viewModel
+    val userAddress by viewModel.userAddress
 
     var comment by remember { mutableStateOf("") }
     var likeCount by remember { mutableStateOf(0) }
@@ -252,7 +255,7 @@ fun DetailScreen(
                     // Menambahkan tombol Edit jika pemilik tanaman
                     if (plant?.owner?.lowercase() == userAddress?.lowercase()) {
                         IconButton(onClick = onEdit) {
-                            Icon(Icons.Filled.Edit, contentDescription = "Edit Tanaman", tint = Color.Blue)
+                            Icon(Icons.Filled.Edit, contentDescription = "Edit Tanaman", tint = Color.DarkGray)
                         }
                     }
                 },
@@ -366,7 +369,34 @@ fun DetailScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("Disukai oleh $likeCount pengguna", color = textColor, fontSize = 14.sp)
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    // Button lihat history
+                    Button(
+                        onClick = {
+                            plant?.id?.let { plantId ->
+                                navController.navigate("transaction_history/${plantId}")
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.History,
+                            contentDescription = "History Icon",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Lihat History Data Tanaman",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text("Komentar Pengguna:", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, fontSize = 18.sp, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
 

@@ -1,5 +1,6 @@
 package com.example.myapplication
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,12 +15,16 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -222,6 +227,23 @@ fun Home(
 
 @Composable
 fun PlantCard(plant: PlantResponse, averageRating: Double, likesCount: Int, navController: NavController) {
+    val viewModel: PlantViewModel = hiltViewModel()
+    var actualRating by remember { mutableStateOf(averageRating) }
+
+    // Ambil rating dari API
+    LaunchedEffect(plant.id) {
+        try {
+            val ratingResponse = viewModel.apiServiceInstance.getAverageRating(plant.id)
+            val freshRating = ratingResponse.averageRating
+            actualRating = freshRating
+
+            // Debug logging
+            Log.d("CardRating", "Plant: ${plant.name}, Fresh rating: $freshRating")
+        } catch (e: Exception) {
+            Log.e("CardRating", "Error fetching fresh rating: ${e.message}")
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -246,9 +268,9 @@ fun PlantCard(plant: PlantResponse, averageRating: Double, likesCount: Int, navC
                 Spacer(modifier = Modifier.height(4.dp))
                 // Row untuk Rating dan Likes
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    StarRating(rating = averageRating)
-                    Spacer(modifier = Modifier.width(16.dp)) // Memberi jarak antara rating dan likes
-                    LikesDisplay(likesCount = likesCount) // Komponen baru untuk menampilkan likes
+                    StarRating(rating = actualRating)
+                    Spacer(modifier = Modifier.width(16.dp))
+                    LikesDisplay(likesCount = likesCount)
                 }
             }
             Spacer(modifier = Modifier.width(8.dp))
@@ -266,18 +288,46 @@ fun PlantCard(plant: PlantResponse, averageRating: Double, likesCount: Int, navC
 
 @Composable
 fun StarRating(rating: Double) {
+    val validRating = rating.takeIf { !it.isNaN() && !it.isInfinite() } ?: 0.0
+
     Row(verticalAlignment = Alignment.CenterVertically) {
         repeat(5) { index ->
-            Icon(
-                imageVector = Icons.Default.Star,
-                contentDescription = "Star Rating",
-                tint = if (index < rating.roundToInt()) Color(0xFFFFD700) else Color(0xFFE0E0E0),
-                modifier = Modifier.size(20.dp)
-            )
+            Box {
+                // Bintang kosong
+                Icon(
+                    imageVector = Icons.Default.StarBorder,
+                    contentDescription = "Star Rating Background",
+                    tint = Color(0xFFE0E0E0),
+                    modifier = Modifier.size(20.dp)
+                )
+
+                // Bintang terisi
+                val fillPercentage = when {
+                    validRating >= index + 1 -> 1f // Penuh
+                    validRating > index -> (validRating - index).toFloat() // Sebagian
+                    else -> 0f // Kosong
+                }
+
+                if (fillPercentage > 0) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star Rating Filled",
+                        tint = Color(0xFFFFD700),
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clipToBounds()
+                            .drawWithContent {
+                                clipRect(right = size.width * fillPercentage) {
+                                    this@drawWithContent.drawContent()
+                                }
+                            }
+                    )
+                }
+            }
         }
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = "(${rating.toString().take(3)})",
+            text = "(${String.format("%.1f", validRating)})",
             fontSize = 12.sp,
             color = Color.DarkGray
         )
@@ -288,9 +338,9 @@ fun StarRating(rating: Double) {
 fun LikesDisplay(likesCount: Int) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
-            imageVector = Icons.Default.Favorite, // Ikon hati untuk likes
+            imageVector = Icons.Default.Favorite,
             contentDescription = "Likes Count",
-            tint = Color(0xFFE53935), // Warna merah untuk ikon hati
+            tint = Color(0xFFE53935),
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(4.dp))

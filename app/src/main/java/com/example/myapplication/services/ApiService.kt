@@ -14,7 +14,6 @@ import com.example.myapplication.data.DataClassResponses.LogoutResponse
 import com.example.myapplication.data.DataClassResponses.RatePlantRequest
 import com.example.myapplication.data.DataClassResponses.RatePlantResponse
 import com.example.myapplication.data.DataClassResponses.RegisterResponse
-import com.example.myapplication.data.DataClassResponses.PublicResponse
 import com.example.myapplication.data.DataClassResponses.SimpleResponse
 import com.example.myapplication.data.DataClassResponses.UserInfoResponse
 import com.example.myapplication.data.IPFSResponse
@@ -50,12 +49,6 @@ interface ApiService {
         @Body request: AddPlantRequest
     ): AddPlantResponse
 
-    @POST("plants/syncPublic")
-    suspend fun syncPlantToPublic(
-        @Header("Authorization") token: String,
-        @Body plantId: String
-    ): PublicResponse
-
     @PUT("plants/edit/{plantId}")
     suspend fun editPlant(
         @Header("Authorization") token: String,
@@ -83,7 +76,7 @@ interface ApiService {
         @Query("kegunaan") kegunaan: String = ""
     ): PlantListResponse
 
-    @GET("plants/plant/averageRating/{plantId}")
+    @GET("plants/averageRating/{plantId}")
     suspend fun getAverageRating(
         @Path("plantId") plantId: String
     ): AverageRatingResponse
@@ -123,4 +116,23 @@ interface ApiService {
     suspend fun getFileFromIPFS(
         @Path("cid") cid: String
     ): ResponseBody
+
+    /* ================================ TRANSACTION HISTORY ================================ */
+    @GET("plants/record/{recordId}")
+    suspend fun getPlantRecord(
+        @Path("recordId") recordId: String
+    ): DataClassResponses.PlantRecordResponse
+
+    @GET("plants/records/all")
+    suspend fun getAllPlantRecords(): DataClassResponses.AllPlantRecordsResponse
+
+    @GET("plants/history/{plantId}")
+    suspend fun getPlantTransactionHistory(
+        @Path("plantId") plantId: String,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 10
+    ): DataClassResponses.TransactionHistoryResponse
+
+    @GET("plants/records/count")
+    suspend fun getRecordCount(): DataClassResponses.RecordCountResponse
 }

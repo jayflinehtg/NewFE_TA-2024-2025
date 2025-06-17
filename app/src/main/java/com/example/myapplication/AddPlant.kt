@@ -314,7 +314,6 @@ fun AddPlant(
                                 onSuccess = { response ->
                                     Toast.makeText(context, "Tanaman berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
 
-                                    viewModel.syncPlantToPublic(response.plantId)
                                     viewModel.fetchPlantsByPage(1)
                                     navController.navigate("home"){
                                         popUpTo("addplant") { inclusive = true }
