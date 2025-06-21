@@ -37,6 +37,12 @@ class PlantViewModel @Inject constructor(
         _userAddress.value = PreferencesHelper.getWalletAddress(context)
     }
 
+    private val _ownerInfoCache = mutableStateOf<Map<String, String>>(emptyMap())
+    val ownerInfoCache: State<Map<String, String>> = _ownerInfoCache
+
+    private val _isLoadingOwnerInfo = mutableStateOf(false)
+    val isLoadingOwnerInfo: State<Boolean> = _isLoadingOwnerInfo
+
     // Menyimpan full name pemilik tanaman
     private val _ownerFullName = mutableStateOf("")
     val ownerFullName: State<String> = _ownerFullName
@@ -47,19 +53,55 @@ class PlantViewModel @Inject constructor(
     fun fetchOwnerFullName(ownerAddress: String) {
         viewModelScope.launch {
             try {
-                // Panggil API secara langsung tanpa menggunakan execute()
-                val response = apiService.getUserInfo(ownerAddress)
+                Log.d("PlantViewModel", "=== Fetching owner info for: $ownerAddress ===")
 
-                // Periksa hasil response
+                // Cek cache terlebih dahulu
+                if (_ownerInfoCache.value.containsKey(ownerAddress)) {
+                    val cachedName = _ownerInfoCache.value[ownerAddress] ?: "Unknown"
+                    _ownerFullName.value = cachedName
+                    Log.d("PlantViewModel", "Using cached name: $cachedName")
+                    return@launch
+                }
+
+                // Set loading state
+                _isLoadingOwnerInfo.value = true
+                _ownerFullName.value = "Memuat..."
+
+                Log.d("PlantViewModel", "Making API call to getUserInfo...")
+                val response = apiService.getUserInfo(ownerAddress)
+                Log.d("PlantViewModel", "API Response: success=${response.success}")
+
                 if (response.success) {
-                    val fullName = response.userData.fullName ?: "Unknown"
+                    val fullName = response.userData.fullName
+                    Log.d("PlantViewModel", "Received fullName: $fullName")
+
                     _ownerFullName.value = fullName
+
+                    // Simpan ke cache
+                    _ownerInfoCache.value = _ownerInfoCache.value.toMutableMap().apply {
+                        put(ownerAddress, fullName)
+                    }
+
+                    Log.d("PlantViewModel", "Successfully cached owner name: $fullName")
                 } else {
-                    _ownerFullName.value = "Tidak dapat mengambil nama"
+                    _ownerFullName.value = "Nama tidak tersedia"
+                    Log.e("PlantViewModel", "API returned success=false")
                 }
             } catch (e: Exception) {
-                _ownerFullName.value = "Error mengambil data"
+                _ownerFullName.value = "Error mengambil nama"
+                Log.e("PlantViewModel", "Exception in fetchOwnerFullName: ${e.message}", e)
+            } finally {
+                _isLoadingOwnerInfo.value = false
             }
+        }
+    }
+
+    fun getOwnerDisplayName(ownerAddress: String): String {
+        return _ownerInfoCache.value[ownerAddress] ?: run {
+            if (!_isLoadingOwnerInfo.value) {
+                fetchOwnerFullName(ownerAddress)
+            }
+            "Memuat..."
         }
     }
 
@@ -234,6 +276,10 @@ class PlantViewModel @Inject constructor(
                 if (local != null) {
                     _selectedPlant.value = local.plant
                     _selectedRating.value = local.averageRating
+                    local.plant.owner.takeIf { it.isNotEmpty() }?.let { ownerAddress ->
+                        Log.d("PlantViewModel", "Auto-fetching owner info for: $ownerAddress")
+                        fetchOwnerFullName(ownerAddress)
+                    }
                 } else {
                     val response = apiService.getPlantById(plantId, token?.let { "Bearer $it" })
                     if (response.success) {
@@ -244,6 +290,10 @@ class PlantViewModel @Inject constructor(
                         val average = if (ratingCount > 0) ratingTotal / ratingCount else 0.0
 
                         _selectedRating.value = average
+                        response.plant.owner.takeIf { it.isNotEmpty() }?.let { ownerAddress ->
+                            Log.d("PlantViewModel", "Auto-fetching owner info for: $ownerAddress")
+                            fetchOwnerFullName(ownerAddress)
+                        }
                     } else {
                         _selectedPlant.value = null
                     }

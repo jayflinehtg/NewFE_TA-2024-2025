@@ -37,7 +37,7 @@ internal object AppModule {
         // Pilih jaringan yang digunakan di sini, tinggal uncomment yang digunakan
         val readonlyRPCMap = mapOf(
             // Ganache
-            "Ganache" to "http://192.168.1.100:7545" // RPC URL untuk Ganache
+            "Ganache" to "http://192.168.1.103:7545" // RPC URL untuk Ganache
         )
 
         // Membuat SDKOptions dengan Infura API Key dan readonlyRPCMap

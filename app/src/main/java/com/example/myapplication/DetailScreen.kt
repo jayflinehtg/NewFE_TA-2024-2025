@@ -106,9 +106,13 @@ fun DetailScreen(
     LaunchedEffect(plantId) {
         viewModel.fetchPlantDetail(plantId, token)
         viewModel.getPlantComments(plantId)
+    }
+
+    LaunchedEffect(plant?.owner) {
         plant?.owner?.let { ownerAddress ->
-            // Mengambil fullName owner berdasarkan wallet address (owner)
-            viewModel.fetchOwnerFullName(ownerAddress)
+            if (ownerAddress.isNotEmpty()) {
+                viewModel.fetchOwnerFullName(ownerAddress)
+            }
         }
     }
 
@@ -146,7 +150,7 @@ fun DetailScreen(
                                 if (errorMessage.contains("login", ignoreCase = true)) {
                                     snackbarHostState.showSnackbar("Harap login terlebih dahulu untuk memberikan rating.")
                                 } else {
-                                    snackbarHostState.showSnackbar("Terjadi kesalahan, coba lagi nanti.")
+                                    snackbarHostState.showSnackbar("Harap login terlebih dahulu untuk memberikan rating.")
                                 }
                             }
                         }
@@ -315,18 +319,18 @@ fun DetailScreen(
                     .padding(innerPadding)
                     .padding(16.dp)
             ) {
-                plant?.let {
-                    Text(it.name, fontSize = 26.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = textColor)
+                plant?.let { plantData ->
+                    Text(plantData.name, fontSize = 26.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = textColor)
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text("Owner: $ownerFullName (${it.owner})", color = textColor, fontWeight = FontWeight.Bold)
+                    Text("Owner: $ownerFullName (${plantData.owner})", color = textColor, fontWeight = FontWeight.Bold)
 
-                    DetailItem("Nama Latin", it.namaLatin, textColor)
-                    DetailItem("Komposisi", it.komposisi, textColor)
-                    DetailItem("Kegunaan", it.kegunaan, textColor)
-                    DetailItem("Dosis", it.dosis, textColor)
-                    DetailItem("Cara Pengolahan", it.caraPengolahan, textColor)
-                    DetailItem("Efek Samping", it.efekSamping, textColor)
+                    DetailItem("Nama Latin", plantData.namaLatin, textColor)
+                    DetailItem("Komposisi", plantData.komposisi, textColor)
+                    DetailItem("Kegunaan", plantData.kegunaan, textColor)
+                    DetailItem("Dosis", plantData.dosis, textColor)
+                    DetailItem("Cara Pengolahan", plantData.caraPengolahan, textColor)
+                    DetailItem("Efek Samping", plantData.efekSamping, textColor)
 
                     Spacer(modifier = Modifier.height(16.dp))
                     Text("Rating Rata-rata: $avgRating", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold, color = textColor)
